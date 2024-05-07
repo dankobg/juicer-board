@@ -1,0 +1,68 @@
+*,
+*::before,
+*::after {
+	box-sizing: border-box;
+}
+
+:host {
+	display: block;
+}
+
+.piece {
+	position: absolute;
+	width: calc(var(--board-width) / var(--cols));
+	height: calc(var(--board-height) / var(--rows));
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	background-size: contain;
+	background-position: center;
+	background-repeat: no-repeat;
+	cursor: pointer;
+	z-index: 60;
+	touch-action: none;
+}
+.piece[data-dragging='true'] {
+	z-index: 65;
+}
+.piece[data-ghost='true'] {
+	z-index: 59;
+	opacity: 0.35;
+}
+
+.piece[data-symbol='r'] {
+	background-image: var(--br-theme);
+}
+.piece[data-symbol='b'] {
+	background-image: var(--bb-theme);
+}
+.piece[data-symbol='n'] {
+	background-image: var(--bn-theme);
+}
+.piece[data-symbol='q'] {
+	background-image: var(--bq-theme);
+}
+.piece[data-symbol='k'] {
+	background-image: var(--bk-theme);
+}
+.piece[data-symbol='p'] {
+	background-image: var(--bp-theme);
+}
+.piece[data-symbol='R'] {
+	background-image: var(--wr-theme);
+}
+.piece[data-symbol='B'] {
+	background-image: var(--wb-theme);
+}
+.piece[data-symbol='N'] {
+	background-image: var(--wn-theme);
+}
+.piece[data-symbol='Q'] {
+	background-image: var(--wq-theme);
+}
+.piece[data-symbol='K'] {
+	background-image: var(--wk-theme);
+}
+.piece[data-symbol='P'] {
+	background-image: var(--wp-theme);
+}

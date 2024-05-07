@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<link rel="icon" type="image/svg+xml" href="/vite.svg" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>juicer board</title>
+		<link rel="stylesheet" href="./src/index.css" />
+		<script type="module" src="./src/juicer-board/juicer-board.ts"></script>
+	</head>
+	<body>
+		<section style="width: 35rem; height: 35rem; margin: 100px">
+			<juicer-board fen="start" coords="inside" files="start" ranks="start" interactive showGhost></juicer-board>
+		</section>
+
+		<section style="display: grid; gap: 1rem">
+			<div>
+				<button class="get">GET (d1)</button>
+				<button class="flip">FLIP</button>
+				<button class="empty">EMPTY</button>
+				<button class="start">START</button>
+				<button class="custom">CUSTOM</button>
+			</div>
+
+			<div>
+				<button class="set" data-sq="b5" data-p="R">SET (b5)</button>
+				<button class="set" data-sq="c5" data-p="b">SET (c5)</button>
+				<button class="set" data-sq="d5" data-p="n">SET (d5)</button>
+				<button class="set" data-sq="e5" data-p="Q">SET (e5)</button>
+				<button class="set" data-sq="f5" data-p="p">SET (f5)</button>
+				<button class="set" data-sq="g5" data-p="P">SET (g5)</button>
+				<button class="group-set">SET GROUP</button>
+			</div>
+
+			<div>
+				<button class="remove" data-sq="a8">REMOVE (a8)</button>
+				<button class="remove" data-sq="h8">REMOVE (h8)</button>
+				<button class="remove" data-sq="a1">REMOVE (a1)</button>
+				<button class="remove" data-sq="h1">REMOVE (h1)</button>
+				<button class="remove" data-sq="d8">REMOVE (d8)</button>
+				<button class="remove" data-sq="d1">REMOVE (d1)</button>
+				<button class="group-remove">REMOVE GROUP</button>
+			</div>
+
+			<div>
+				<button class="move" data-from="a2" data-to="a3">MOVE (a2-a3)</button>
+				<button class="move" data-from="c2" data-to="c3">MOVE (c2-c3)</button>
+				<button class="move" data-from="e2" data-to="e3">MOVE (e2-e3)</button>
+				<button class="move" data-from="g2" data-to="g3">MOVE (g2-g3)</button>
+				<button class="move" data-from="g1" data-to="f3">MOVE (g1-f3)</button>
+				<button class="move" data-from="f1" data-to="c4">MOVE (f1-c4)</button>
+				<button class="group-move">MOVE GROUP</button>
+			</div>
+		</section>
+
+		<script type="module">
+			const b = document.querySelector('juicer-board');
+			b.addEventListener('movestart', e => {
+				console.log('start', e.data);
+			});
+			b.addEventListener('movecancel', e => {
+				console.log('cancel', e.data);
+			});
+			b.addEventListener('movefinish', e => {
+				console.log('finish', e.data);
+			});
+
+			const getAll = prefix => document.querySelectorAll(`[class^='${prefix}']`);
+			const getGroup = name => document.querySelector(`.group-${name}`);
+
+			const get = document.querySelector('.get');
+			const flip = document.querySelector('.flip');
+			const count = document.querySelector('.count');
+			const empty = document.querySelector('.empty');
+			const start = document.querySelector('.start');
+			const custom = document.querySelector('.custom');
+
+			const [setBtns, setGroup] = [getAll('set'), getGroup('set')];
+			const [removeBtns, removeGroup] = [getAll('remove'), getGroup('remove')];
+			const [moveBtns, moveGroup] = [getAll('move'), getGroup('move')];
+
+			setBtns.forEach(btn => {
+				btn.onclick = () => b.setPiece(btn.dataset.sq, btn.dataset.p);
+			});
+			removeBtns.forEach(btn => {
+				btn.onclick = () => b.removePiece(btn.dataset.sq);
+			});
+			moveBtns.forEach(btn => {
+				btn.onclick = () => b.movePiece(btn.dataset.from, btn.dataset.to);
+			});
+
+			setGroup.onclick = () => setBtns.forEach(btn => b.setPiece(btn.dataset.sq, btn.dataset.p));
+			removeGroup.onclick = () => removeBtns.forEach(btn => b.removePiece(btn.dataset.sq));
+			moveGroup.onclick = () => moveBtns.forEach(btn => b.movePiece(btn.dataset.from, btn.dataset.to));
+
+			empty.onclick = () => b.clear();
+			custom.onclick = () => b.load('8/8/QRBNPNBR/8/2BP4/P1N1P2N/1PP2PPP/R1BQ1RK1');
+			start.onclick = () => b.load();
+			flip.onclick = () => b.flip();
+			get.onclick = () => console.log(b.getPiece('d1'));
+		</script>
+	</body>
+</html>

@@ -1,0 +1,31 @@
+*,
+*::before,
+*::after {
+	box-sizing: border-box;
+}
+
+body {
+	padding: 0;
+	margin: 0;
+}
+
+:root {
+	--cols: 8;
+	--rows: 8;
+
+	--board-theme: url('/images/board/svg/blue.svg');
+
+	--wr-theme: url('/images/piece/gioco/wR.svg');
+	--wb-theme: url('/images/piece/gioco/wB.svg');
+	--wn-theme: url('/images/piece/gioco/wN.svg');
+	--wq-theme: url('/images/piece/gioco/wQ.svg');
+	--wk-theme: url('/images/piece/gioco/wK.svg');
+	--wp-theme: url('/images/piece/gioco/wP.svg');
+
+	--br-theme: url('/images/piece/gioco/bR.svg');
+	--bb-theme: url('/images/piece/gioco/bB.svg');
+	--bn-theme: url('/images/piece/gioco/bN.svg');
+	--bq-theme: url('/images/piece/gioco/bQ.svg');
+	--bk-theme: url('/images/piece/gioco/bK.svg');
+	--bp-theme: url('/images/piece/gioco/bP.svg');
+}
