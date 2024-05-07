@@ -10,7 +10,7 @@
 	</head>
 	<body>
 		<section style="width: 35rem; height: 35rem; margin: 100px">
-			<juicer-board fen="start" coords="inside" files="start" ranks="start" interactive showGhost></juicer-board>
+			<juicer-board fen="start" coords="inside" files="start" ranks="start" interactive show-ghost></juicer-board>
 		</section>
 
 		<section style="display: grid; gap: 1rem">
@@ -55,6 +55,7 @@
 
 		<script type="module">
 			const b = document.querySelector('juicer-board');
+
 			b.addEventListener('movestart', e => {
 				console.log('start', e.data);
 			});

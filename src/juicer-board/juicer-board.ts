@@ -29,6 +29,7 @@ import {
 	PieceSymbol,
 	NumPair,
 	BLACK,
+	PIECE_SYMBOLS,
 } from '../model';
 import '../rank-coords/rank-coords';
 import juicerBoardCss from './juicer-board.css?inline';
@@ -137,17 +138,17 @@ export class JuicerBoard extends LitElement {
 
 	@property({ type: Boolean }) interactive: boolean = false;
 
-	@property({ type: Boolean }) showGhost: boolean = false;
+	@property({ type: Boolean, attribute: 'show-ghost' }) showGhost: boolean = false;
 
-	@property() boardTheme: string = 'blue';
+	@property({ attribute: 'board-theme' }) boardTheme?: string;
 
-	@property() pieceTheme: string = 'gioco';
+	@property() pieceTheme?: (pieceFenSymbol: string) => string;
 
 	@property() coords?: 'outside' | 'inside';
 
-	@property() ranksPosition: 'start' | 'end' | 'both' = 'start';
+	@property({ attribute: 'ranks-position' }) ranksPosition: 'start' | 'end' | 'both' = 'start';
 
-	@property() filesPosition: 'start' | 'end' | 'both' = 'start';
+	@property({ attribute: 'files-position' }) filesPosition: 'start' | 'end' | 'both' = 'start';
 
 	@property({ type: Number }) animationInDuration: number = this.animationDuration;
 
@@ -441,6 +442,13 @@ export class JuicerBoard extends LitElement {
 	}
 
 	protected updated(changedProperties: PropertyValueMap<JuicerBoard> | Map<PropertyKey, unknown>): void {
+		if (changedProperties.has('boardTheme')) {
+			this.initBoardTheme();
+		}
+		if (changedProperties.has('pieceTheme')) {
+			this.initPieceTheme();
+		}
+
 		if (changedProperties.has('fen')) {
 			const fen = ['new', 'start'].includes(this.fen) ? FEN_START : this.fen;
 			if (this.board) {
@@ -542,6 +550,24 @@ export class JuicerBoard extends LitElement {
 
 	print(): string {
 		return this.board?.print() ?? '';
+	}
+
+	private initBoardTheme(): void {
+		if (this.boardTheme) {
+			this.style.setProperty('--board-theme', `url('${this.boardTheme}')`);
+		}
+	}
+
+	private initPieceTheme() {
+		if (!this.pieceTheme) {
+			return;
+		}
+
+		PIECE_SYMBOLS.forEach(symbol => {
+			const name = '--' + (symbol.toUpperCase() === symbol ? 'w' : 'b') + symbol.toLowerCase() + '-theme';
+			const theme = `url('${this.pieceTheme!(symbol)}')`;
+			this.style.setProperty(name, theme);
+		});
 	}
 
 	protected override render() {

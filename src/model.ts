@@ -56,7 +56,10 @@ export const BLACK = 'b';
 export const RANKS = ['1', '2', '3', '4', '5', '6', '7', '8'] as const;
 export const FILES = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'] as const;
 
-export const PIECE_KINDS = ['king', 'queen', 'rook', 'bishop', 'knight', 'pawn'] as const;
+export const PIECE_KINDS: readonly PieceKind[] = ['king', 'queen', 'rook', 'bishop', 'knight', 'pawn'];
+export const WHITE_PIECE_SYMBOLS: readonly Uppercase<PieceFenSymbol>[] = ['K', 'Q', 'R', 'B', 'N', 'P'];
+export const BLACK_PIECE_SYMBOLS: readonly Lowercase<PieceFenSymbol>[] = ['k', 'q', 'r', 'b', 'n', 'p'];
+export const PIECE_SYMBOLS: readonly PieceFenSymbol[] = ['K', 'Q', 'R', 'B', 'N', 'P', 'k', 'q', 'r', 'b', 'n', 'p'];
 
 // prettier-ignore
 export const COORDS: readonly Coord[] = [
