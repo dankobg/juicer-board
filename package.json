@@ -3,6 +3,18 @@
 	"private": false,
 	"version": "0.0.1",
 	"type": "module",
+	"main": "./dist/juicer-board.js",
+	"module": "./dist/juicer-board.js",
+	"types": "./dist/juicer-board.d.ts",
+	"exports": {
+		".": {
+			"import": "./dist/juicer-board.js",
+			"require": "./dist/juicer-board.umd.cjs"
+		}
+	},
+	"files": [
+		"dist"
+	],
 	"scripts": {
 		"dev": "vite",
 		"build": "tsc && vite build",
