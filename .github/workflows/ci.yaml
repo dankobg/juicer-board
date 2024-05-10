@@ -1,0 +1,94 @@
+name: Build and publish juicer-board to npm
+
+on:
+  workflow_dispatch:
+  release:
+    types: [published]
+
+concurrency: ${{ github.workflow }}-${{ github.ref }}
+
+jobs:
+  build:
+    name: Build the files
+
+    strategy:
+      matrix:
+        platform: [ubuntu-latest]
+        node-version: [22.x]
+
+    if: "!contains(github.event.head_commit.message, 'SKIP_CI')"
+    runs-on: ${{ matrix.platform }}
+
+    steps:
+      - name: Checkout repo code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Install dependencies
+        run: npm ci --omit=dev
+
+      - name: Run tests
+        run: npm run test
+
+      - name: Build the app
+        run: npm run build
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: juicer-board/dist
+
+  publish:
+    name: publish juicer-board to npm
+
+    strategy:
+      matrix:
+        platform: [ubuntu-latest]
+        node-version: [22.x]
+
+    if: "!contains(github.event.head_commit.message, 'SKIP_CI')"
+    runs-on: ${{ matrix.platform }}
+
+    permissions:
+      packages: write
+      contents: write
+      issues: write
+      pull-requests: write
+
+    needs: build
+
+    steps:
+      - name: Checkout repo code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: juicer-board/dist
+
+      # - name: Publish to npm
+      #   uses: JS-DevTools/npm-publish@v3
+      #   with:
+      #     token: ${{ secrets.GH_TOKEN }}
+
+      - name: Create release pull request or publish to npm
+        uses: changesets/action@v1
+        with:
+          publish: npm run release
+          version: npm run version
+          commit: 'chore: new release'
+          title: 'chore: new release candidate'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}

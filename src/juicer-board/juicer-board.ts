@@ -150,15 +150,17 @@ export class JuicerBoard extends LitElement {
 
 	@property({ attribute: 'files-position' }) filesPosition: 'start' | 'end' | 'both' = 'start';
 
-	@property({ type: Number }) animationInDuration: number = this.animationDuration;
+	@property({ type: Number, attribute: 'animation-in-duration' }) animationInDuration: number = this.animationDuration;
 
-	@property({ type: Number }) animationOutDuration: number = this.animationDuration;
+	@property({ type: Number, attribute: 'animation-out-duration' }) animationOutDuration: number =
+		this.animationDuration;
 
-	@property({ type: Number }) animationMoveDuration: number = this.animationDuration;
+	@property({ type: Number, attribute: 'animation-move-duration' }) animationMoveDuration: number =
+		this.animationDuration;
 
-	@property({ type: Number }) animationSnapbackDuration: number = 0;
+	@property({ type: Number, attribute: 'animation-snapback-duration' }) animationSnapbackDuration: number = 0;
 
-	@property({ type: Number }) animationSnapDuration: number = 0;
+	@property({ type: Number, attribute: 'animation-snap-duration' }) animationSnapDuration: number = 0;
 
 	private onPiecePointerDown(event: PiecePointerDownEvent): void {
 		event.stopPropagation();

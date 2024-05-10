@@ -1,5 +1,6 @@
 import { resolve } from 'path';
 import { defineConfig } from 'vite';
+import dts from 'vite-plugin-dts';
 
 export default defineConfig({
 	build: {
@@ -10,8 +11,12 @@ export default defineConfig({
 			formats: ['es', 'umd'],
 		},
 		rollupOptions: {
-			external: [],
-			output: {},
+			// plugins: [
+			// 	dts({
+			// 		include: ['src/vite-env.d.ts', 'src/juicer-board/juicer-board.ts'],
+			// 		rollupTypes: true,
+			// 	}),
+			// ],
 		},
 	},
 });
