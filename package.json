@@ -34,9 +34,7 @@
 		"dev": "vite",
 		"build": "tsc && vite build",
 		"preview": "vite preview",
-		"test": "echo \"No test specified\"",
-		"version": "changeset version",
-		"release": "changeset publish"
+		"test": "echo \"No test specified\""
 	},
 	"dependencies": {
 		"@lit-labs/observers": "^2.0.2",
