@@ -4,6 +4,7 @@ Basic chess board web component for juicer-chess
 
 ### Features
 
+- Easy to use web component
 - Drag n drop piece movement
 - Customizable board and piece themes using css or props
   
