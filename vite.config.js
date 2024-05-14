@@ -11,7 +11,6 @@ export default defineConfig({
 			formats: ['es', 'umd'],
 		},
 		rollupOptions: {
-			input: {},
 			// plugins: [
 			// 	dts({
 			// 		include: ['src/vite-env.d.ts', 'src/juicer-board/juicer-board.ts'],
