@@ -1,3 +1,3 @@
 # juicer-board
 
-basic chess board web component
+Basic chess board web component for juicer-chess
