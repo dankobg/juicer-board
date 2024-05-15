@@ -12,9 +12,6 @@ export default defineConfig({
 		},
 	},
 	plugins: [
-		dts({
-			include: ['src/vite-env.d.ts', 'src/juicer-board/juicer-board.ts'],
-			rollupTypes: true,
-		}),
+		dts({ rollupTypes: true }),
 	],
 });
