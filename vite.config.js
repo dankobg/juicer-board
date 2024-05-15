@@ -8,15 +8,13 @@ export default defineConfig({
 			entry: resolve(__dirname, 'src/juicer-board/juicer-board.ts'),
 			name: 'juicer-board',
 			fileName: 'juicer-board',
-			formats: ['es', 'umd'],
-		},
-		rollupOptions: {
-			// plugins: [
-			// 	dts({
-			// 		include: ['src/vite-env.d.ts', 'src/juicer-board/juicer-board.ts'],
-			// 		rollupTypes: true,
-			// 	}),
-			// ],
+			formats: ['es'],
 		},
 	},
+	plugins: [
+		dts({
+			include: ['src/vite-env.d.ts', 'src/juicer-board/juicer-board.ts'],
+			rollupTypes: true,
+		}),
+	],
 });
