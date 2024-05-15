@@ -142,7 +142,7 @@ export class JuicerBoard extends LitElement {
 
 	@property({ attribute: 'board-theme' }) boardTheme?: string;
 
-	@property() pieceTheme?: (pieceFenSymbol: string) => string;
+	@property({ attribute: 'piece-theme' }) pieceTheme?: (pieceFenSymbol: string) => string;
 
 	@property() coords?: 'outside' | 'inside';
 
