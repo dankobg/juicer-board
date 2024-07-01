@@ -1,0 +1,15 @@
+:root {
+	--board-theme: url('https://raw.githubusercontent.com/lichess-org/lila/89614657e9cfd285968aa502f6479c0620a5ac1b/public/images/board/svg/brown.svg');
+	--wr-theme: url('https://raw.githubusercontent.com/lichess-org/lila/89614657e9cfd285968aa502f6479c0620a5ac1b/public/piece/gioco/wR.svg');
+	--wb-theme: url('https://raw.githubusercontent.com/lichess-org/lila/89614657e9cfd285968aa502f6479c0620a5ac1b/public/piece/gioco/wB.svg');
+	--wn-theme: url('https://raw.githubusercontent.com/lichess-org/lila/89614657e9cfd285968aa502f6479c0620a5ac1b/public/piece/gioco/wN.svg');
+	--wk-theme: url('https://raw.githubusercontent.com/lichess-org/lila/89614657e9cfd285968aa502f6479c0620a5ac1b/public/piece/gioco/wK.svg');
+	--wq-theme: url('https://raw.githubusercontent.com/lichess-org/lila/89614657e9cfd285968aa502f6479c0620a5ac1b/public/piece/gioco/wQ.svg');
+	--wp-theme: url('https://raw.githubusercontent.com/lichess-org/lila/89614657e9cfd285968aa502f6479c0620a5ac1b/public/piece/gioco/wP.svg');
+	--br-theme: url('https://raw.githubusercontent.com/lichess-org/lila/89614657e9cfd285968aa502f6479c0620a5ac1b/public/piece/gioco/bR.svg');
+	--bb-theme: url('https://raw.githubusercontent.com/lichess-org/lila/89614657e9cfd285968aa502f6479c0620a5ac1b/public/piece/gioco/bB.svg');
+	--bn-theme: url('https://raw.githubusercontent.com/lichess-org/lila/89614657e9cfd285968aa502f6479c0620a5ac1b/public/piece/gioco/bN.svg');
+	--bk-theme: url('https://raw.githubusercontent.com/lichess-org/lila/89614657e9cfd285968aa502f6479c0620a5ac1b/public/piece/gioco/bK.svg');
+	--bq-theme: url('https://raw.githubusercontent.com/lichess-org/lila/89614657e9cfd285968aa502f6479c0620a5ac1b/public/piece/gioco/bQ.svg');
+	--bp-theme: url('https://raw.githubusercontent.com/lichess-org/lila/89614657e9cfd285968aa502f6479c0620a5ac1b/public/piece/gioco/bP.svg');
+}

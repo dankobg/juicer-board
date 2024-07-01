@@ -5,15 +5,24 @@
 		<link rel="icon" type="image/svg+xml" href="/vite.svg" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 		<title>juicer board</title>
-		<link rel="stylesheet" href="./src/index.css" />
+		<link rel="stylesheet" href="style.css" />
 		<script type="module" src="./src/juicer-board/juicer-board.ts"></script>
 	</head>
 	<body>
 		<section style="width: 35rem; height: 35rem; margin: 100px">
-			<juicer-board fen="start" coords="inside" files="start" ranks="start" interactive show-ghost></juicer-board>
+			<juicer-board
+				orientation="w"
+				fen="start"
+				coords="inside"
+				files="start"
+				ranks="start"
+				interactive
+				show-ghost
+			></juicer-board>
 		</section>
 
 		<section style="display: grid; gap: 1rem">
+			<div>orientation: <span class="orientation"></span></div>
 			<div>
 				<button class="get">GET (d1)</button>
 				<button class="flip">FLIP</button>
@@ -55,6 +64,8 @@
 
 		<script type="module">
 			const b = document.querySelector('juicer-board');
+
+			document.querySelector('.orientation').innerHTML = b.orientation;
 
 			b.addEventListener('movestart', e => {
 				console.log('start', e.data);

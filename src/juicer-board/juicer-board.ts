@@ -649,4 +649,10 @@ declare global {
 	interface HTMLElementTagNameMap {
 		'juicer-board': JuicerBoard;
 	}
+
+	interface HTMLElementEventMap {
+		movestart: MoveStartEvent;
+		movecancel: MoveCancelEvent;
+		movefinish: MoveFinishEvent;
+	}
 }
