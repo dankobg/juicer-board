@@ -19,22 +19,6 @@ export function assertUnreachable(value: never): never {
 	throw new Error(`Unexpected value: ${value}`);
 }
 
-export function generateId(length = 32): string {
-	if (length % 2 !== 0) {
-		throw new Error('Hex ID length must be even.');
-	}
-
-	const characters = '0123456789ABCDEF';
-	let result = '';
-
-	for (let i = 0; i < length; i++) {
-		const randomIndex = Math.floor(Math.random() * characters.length);
-		result += characters[randomIndex];
-	}
-
-	return result;
-}
-
 export function translateElement(element: HTMLElement, deltaX: number, deltaY: number): void {
 	element.style.transform = `translate(${deltaX}px, ${deltaY}px)`;
 }

@@ -9,7 +9,7 @@
 		<script type="module" src="./src/juicer-board/juicer-board.ts"></script>
 	</head>
 	<body>
-		<section style="width: 35rem; height: 35rem; margin: 100px">
+		<section style="width: 40rem; height: 40rem">
 			<juicer-board
 				orientation="w"
 				fen="start"
@@ -21,8 +21,7 @@
 			></juicer-board>
 		</section>
 
-		<section style="display: grid; gap: 1rem">
-			<div>orientation: <span class="orientation"></span></div>
+		<section style="display: grid; gap: 1rem; margin-top: 2rem">
 			<div>
 				<button class="get">GET (d1)</button>
 				<button class="flip">FLIP</button>
@@ -64,8 +63,6 @@
 
 		<script type="module">
 			const b = document.querySelector('juicer-board');
-
-			document.querySelector('.orientation').innerHTML = b.orientation;
 
 			b.addEventListener('movestart', e => {
 				console.log('start', e.data);

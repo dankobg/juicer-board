@@ -1,5 +1,3 @@
-import { generateId } from './util';
-
 export type Color = 'w' | 'b';
 
 export type Row = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7;
@@ -405,7 +403,7 @@ export class Piece {
 		public kind: PieceKind,
 		public color: Color
 	) {
-		this.id = this.generateId();
+		this.id = crypto.randomUUID();
 		const symbol = kindToSymbol.get(this.kind)!;
 		this.fenSymbol = this.color === WHITE ? (symbol.toUpperCase() as PieceFenSymbol) : symbol;
 	}
@@ -418,10 +416,6 @@ export class Piece {
 
 	static same(p1?: Piece, p2?: Piece): boolean {
 		return p1?.color === p2?.color && p1?.kind === p2?.kind;
-	}
-
-	private generateId(length = 32): string {
-		return generateId(length);
 	}
 
 	isWhite(): boolean {

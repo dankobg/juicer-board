@@ -41,7 +41,6 @@ import {
 	translateElement,
 	getGroupedChangesByOp as getGroupedChanges,
 	setZeroOpacityElement,
-	generateId,
 } from '../util';
 import { repeat } from 'lit/directives/repeat.js';
 
@@ -97,70 +96,41 @@ export class JuicerBoard extends LitElement {
 	static override styles = unsafeCSS(juicerBoardCss);
 
 	private animationDuration: number = 300;
-
 	protected resizeObserver = new ResizeController(this, { config: { box: 'border-box' } });
 
-	@state() board: Board | null = null;
-
-	@state() tmpBoard: Board | null = null;
-
-	@state() pendingAnimations: { animation: Animation; translateTo: NumPair; elm: HTMLElement }[] = [];
-
-	@state() queuedAnimations: number = 0;
-
-	@state() finishedAnimations: number = 0;
-
-	@state() dragging: boolean = false;
-
-	@state() draggedElm: HTMLElement | null = null;
-
-	@state() pieceOffsetWidth: number = 0;
-
-	@state() pieceOffsetHeight: number = 0;
-
-	@state() srcSquareIndex: number = NONE_SQUARE;
-
-	@state() destSquareIndex: number = NONE_SQUARE;
-
-	@state() dragOverSquareIndex: number = NONE_SQUARE;
-
-	@state() selectedSquareIndex: number = NONE_SQUARE;
-
-	@state() highlightedSquareIndexes: number[] = [];
-
-	@state() lastPos: { x: number; y: number } = { x: 0, y: 0 };
-
-	@state() ghost: { piece: Piece; coord: Coord } | null = null;
-
 	@property() fen: string = FEN_EMPTY;
-
 	@property() orientation: Color = WHITE;
-
 	@property({ type: Boolean }) interactive: boolean = false;
-
 	@property({ type: Boolean, attribute: 'show-ghost' }) showGhost: boolean = false;
-
 	@property({ attribute: 'board-theme' }) boardTheme?: string;
-
 	@property({ attribute: 'piece-theme' }) pieceTheme?: (pieceFenSymbol: string) => string;
-
 	@property() coords?: 'outside' | 'inside';
-
 	@property({ attribute: 'ranks-position' }) ranksPosition: 'start' | 'end' | 'both' = 'start';
-
 	@property({ attribute: 'files-position' }) filesPosition: 'start' | 'end' | 'both' = 'start';
-
 	@property({ type: Number, attribute: 'animation-in-duration' }) animationInDuration: number = this.animationDuration;
-
 	@property({ type: Number, attribute: 'animation-out-duration' }) animationOutDuration: number =
 		this.animationDuration;
-
 	@property({ type: Number, attribute: 'animation-move-duration' }) animationMoveDuration: number =
 		this.animationDuration;
-
 	@property({ type: Number, attribute: 'animation-snapback-duration' }) animationSnapbackDuration: number = 0;
-
 	@property({ type: Number, attribute: 'animation-snap-duration' }) animationSnapDuration: number = 0;
+
+	@state() board: Board = new Board(this.fen, this.orientation);
+	@state() tmpBoard: Board = this.board.clone();
+	@state() pendingAnimations: { animation: Animation; translateTo: NumPair; elm: HTMLElement }[] = [];
+	@state() queuedAnimations: number = 0;
+	@state() finishedAnimations: number = 0;
+	@state() dragging: boolean = false;
+	@state() draggedElm: HTMLElement | null = null;
+	@state() pieceOffsetWidth: number = 0;
+	@state() pieceOffsetHeight: number = 0;
+	@state() srcSquareIndex: number = NONE_SQUARE;
+	@state() destSquareIndex: number = NONE_SQUARE;
+	@state() dragOverSquareIndex: number = NONE_SQUARE;
+	@state() selectedSquareIndex: number = NONE_SQUARE;
+	@state() highlightedSquareIndexes: number[] = [];
+	@state() lastPos: { x: number; y: number } = { x: 0, y: 0 };
+	@state() ghost: { piece: Piece; coord: Coord } | null = null;
 
 	private onPiecePointerDown(event: PiecePointerDownEvent): void {
 		event.stopPropagation();
@@ -426,7 +396,7 @@ export class JuicerBoard extends LitElement {
 			for (const change of changes) {
 				const jp = this.shadowRoot!.querySelector(`juicer-piece[id='${change.piece.id}']`) as JuicerPiece;
 				const [animation, translateTo, elm] = this.createAnimation(jp.pieceElement, change);
-				animation.id = `${change.op}_${generateId(16)}`;
+				animation.id = `${change.op}_${crypto.randomUUID()}`;
 				this.enqueuePendingAnimation(animation, translateTo, elm, parallelAnimations);
 				this.playAnimation(animation, {
 					onFinish: () => {
@@ -441,6 +411,18 @@ export class JuicerBoard extends LitElement {
 				});
 			}
 		});
+	}
+
+	protected willUpdate(changedProperties: PropertyValueMap<JuicerBoard> | Map<PropertyKey, unknown>): void {
+		if (changedProperties.has('fen') || changedProperties.has('orientation')) {
+			const fen = ['new', 'start'].includes(this.fen) ? FEN_START : this.fen;
+			if (this.board) {
+				this.load(fen);
+			} else {
+				this.board = new Board(fen, this.orientation);
+			}
+			this.tmpBoard = this.board.clone();
+		}
 	}
 
 	protected updated(changedProperties: PropertyValueMap<JuicerBoard> | Map<PropertyKey, unknown>): void {
@@ -545,8 +527,6 @@ export class JuicerBoard extends LitElement {
 		if (this.pendingAnimations.length > 0) {
 			return;
 		}
-		this.board!.flipOrientation();
-		this.board = this.board!.clone();
 		this.orientation = this.orientation === WHITE ? BLACK : WHITE;
 	}
 
