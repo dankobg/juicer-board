@@ -8,9 +8,7 @@ export class RankCoords extends LitElement {
 	static override styles = unsafeCSS(rankCoordsCss);
 
 	@property() orientation: Color = WHITE;
-
 	@property() coords: 'outside' | 'inside' = 'inside';
-
 	@property() position: 'start' | 'end' | 'both' = 'start';
 
 	protected override render() {

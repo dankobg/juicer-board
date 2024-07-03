@@ -1,94 +1,23 @@
 import { LitElement, html, unsafeCSS } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
-import { Color, Coord, Piece, Square, WHITE } from '../model';
+import { COLS, Color, Coord, Piece, ROWS, Square, WHITE } from '../model';
 import { getSquareIndexFromPointer } from '../util';
 import juicerPieceCss from './juicer-piece.css?inline';
 import { ifDefined } from 'lit/directives/if-defined.js';
-
-export class PiecePointerDownEvent extends Event {
-	static eventType = 'piece:pointerdown';
-
-	data: {
-		pieceElement: HTMLDivElement;
-		pieceId: string;
-		pieceRect: DOMRect;
-		squareIndex: number;
-		clientX: number;
-		clientY: number;
-		offsetX: number;
-		offsetY: number;
-	};
-
-	constructor(data: PiecePointerDownEvent['data']) {
-		super(PiecePointerDownEvent.eventType, { bubbles: true, composed: true, cancelable: false });
-		this.data = data;
-	}
-}
-
-export class PiecePointerUpEvent extends Event {
-	static eventType = 'piece:pointerup';
-
-	data: {
-		pieceElement: HTMLDivElement;
-		pieceId: string;
-		squareIndex: number;
-		clientX: number;
-		clientY: number;
-		offsetX: number;
-		offsetY: number;
-	};
-
-	constructor(data: PiecePointerUpEvent['data']) {
-		super(PiecePointerUpEvent.eventType, { bubbles: true, composed: true, cancelable: false });
-		this.data = data;
-	}
-}
-
-export class PiecePointerMoveEvent extends Event {
-	static eventType = 'piece:pointermove';
-
-	data: {
-		pieceElement: HTMLDivElement;
-		pieceId: string;
-		squareIndex: number;
-		clientX: number;
-		clientY: number;
-		offsetX: number;
-		offsetY: number;
-	};
-
-	constructor(data: PiecePointerMoveEvent['data']) {
-		super(PiecePointerMoveEvent.eventType, { bubbles: true, composed: true, cancelable: false });
-		this.data = data;
-	}
-}
-
-export class PiecePointerCancelEvent extends Event {
-	static eventType = 'piece:pointercancel';
-
-	constructor() {
-		super(PiecePointerCancelEvent.eventType, { bubbles: true, composed: true, cancelable: false });
-	}
-}
 
 @customElement('juicer-piece')
 export class JuicerPiece extends LitElement {
 	static override styles = unsafeCSS(juicerPieceCss);
 
 	@property({ type: Boolean }) interactive: boolean = false;
-
 	@property({ type: Boolean }) ghost: boolean = false;
-
 	@property({ type: Boolean }) checked: boolean = false;
-
 	@property({ type: Object }) piece!: Piece;
-
 	@property() coord!: Coord;
-
 	@property({ type: Boolean }) dragging: boolean = false;
-
+	@property({ type: Number }) boardWidth: number = 0;
+	@property({ type: Number }) boardHeight: number = 0;
 	@property() orientation: Color = WHITE;
-
 	@property({ reflect: true }) get id(): string {
 		return this.piece.id;
 	}
@@ -191,7 +120,7 @@ export class JuicerPiece extends LitElement {
 
 	protected override render() {
 		const { row, col } = Square.getDataFromCoord(this.coord, this.orientation);
-		const translate = `transform: translate(${col * 70}px, ${row * 70}px)`;
+		const translate = `transform: translate(${(col * this.boardWidth) / COLS}px, ${(row * this.boardHeight) / ROWS}px)`;
 
 		return html`
 			<div
@@ -212,6 +141,72 @@ export class JuicerPiece extends LitElement {
 				style="${translate}"
 			></div>
 		`;
+	}
+}
+
+export class PiecePointerDownEvent extends Event {
+	static eventType = 'piece:pointerdown';
+
+	data: {
+		pieceElement: HTMLDivElement;
+		pieceId: string;
+		pieceRect: DOMRect;
+		squareIndex: number;
+		clientX: number;
+		clientY: number;
+		offsetX: number;
+		offsetY: number;
+	};
+
+	constructor(data: PiecePointerDownEvent['data']) {
+		super(PiecePointerDownEvent.eventType, { bubbles: true, composed: true, cancelable: false });
+		this.data = data;
+	}
+}
+
+export class PiecePointerUpEvent extends Event {
+	static eventType = 'piece:pointerup';
+
+	data: {
+		pieceElement: HTMLDivElement;
+		pieceId: string;
+		squareIndex: number;
+		clientX: number;
+		clientY: number;
+		offsetX: number;
+		offsetY: number;
+	};
+
+	constructor(data: PiecePointerUpEvent['data']) {
+		super(PiecePointerUpEvent.eventType, { bubbles: true, composed: true, cancelable: false });
+		this.data = data;
+	}
+}
+
+export class PiecePointerMoveEvent extends Event {
+	static eventType = 'piece:pointermove';
+
+	data: {
+		pieceElement: HTMLDivElement;
+		pieceId: string;
+		squareIndex: number;
+		clientX: number;
+		clientY: number;
+		offsetX: number;
+		offsetY: number;
+	};
+
+	constructor(data: PiecePointerMoveEvent['data']) {
+		super(PiecePointerMoveEvent.eventType, { bubbles: true, composed: true, cancelable: false });
+		this.data = data;
+	}
+}
+
+export class PiecePointerCancelEvent extends Event {
+	static eventType = 'piece:pointercancel';
+
+	constructor() {
+		super(PiecePointerCancelEvent.eventType, { bubbles: true, composed: true, cancelable: false });
 	}
 }
 

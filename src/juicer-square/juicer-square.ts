@@ -9,13 +9,9 @@ export class JuicerSquare extends LitElement {
 	static override styles = unsafeCSS(juicerSquareCss);
 
 	@property({ type: Object }) square!: Square;
-
 	@property({ type: Boolean }) checked: boolean = false;
-
 	@property({ type: Boolean }) selected: boolean = false;
-
 	@property({ type: Boolean }) bordered: boolean = false;
-
 	@property({ type: Boolean }) highlighted: boolean = false;
 
 	protected override render() {

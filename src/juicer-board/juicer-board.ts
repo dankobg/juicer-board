@@ -107,13 +107,11 @@ export class JuicerBoard extends LitElement {
 	@property() coords?: 'outside' | 'inside';
 	@property({ attribute: 'ranks-position' }) ranksPosition: 'start' | 'end' | 'both' = 'start';
 	@property({ attribute: 'files-position' }) filesPosition: 'start' | 'end' | 'both' = 'start';
-	@property({ type: Number, attribute: 'animation-in-duration' }) animationInDuration: number = this.animationDuration;
-	@property({ type: Number, attribute: 'animation-out-duration' }) animationOutDuration: number =
-		this.animationDuration;
-	@property({ type: Number, attribute: 'animation-move-duration' }) animationMoveDuration: number =
-		this.animationDuration;
-	@property({ type: Number, attribute: 'animation-snapback-duration' }) animationSnapbackDuration: number = 0;
-	@property({ type: Number, attribute: 'animation-snap-duration' }) animationSnapDuration: number = 0;
+	@property({ type: Number, attribute: 'anim-in-dur' }) animationInDuration: number = this.animationDuration;
+	@property({ type: Number, attribute: 'anim-out-dur' }) animationOutDuration: number = this.animationDuration;
+	@property({ type: Number, attribute: 'anim-move-dur' }) animationMoveDuration: number = this.animationDuration;
+	@property({ type: Number, attribute: 'anim-snapback-dur' }) animationSnapbackDuration: number = 0;
+	@property({ type: Number, attribute: 'anim-snap-dur' }) animationSnapDuration: number = 0;
 
 	@state() board: Board = new Board(this.fen, this.orientation);
 	@state() tmpBoard: Board = this.board.clone();
