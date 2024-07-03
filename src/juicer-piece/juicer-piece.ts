@@ -15,8 +15,8 @@ export class JuicerPiece extends LitElement {
 	@property({ type: Object }) piece!: Piece;
 	@property() coord!: Coord;
 	@property({ type: Boolean }) dragging: boolean = false;
-	@property({ type: Number }) boardWidth: number = 0;
-	@property({ type: Number }) boardHeight: number = 0;
+	@property({ type: Number, attribute: 'board-width' }) boardWidth: number = 0;
+	@property({ type: Number, attribute: 'board-height' }) boardHeight: number = 0;
 	@property() orientation: Color = WHITE;
 	@property({ reflect: true }) get id(): string {
 		return this.piece.id;

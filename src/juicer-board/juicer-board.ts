@@ -591,6 +591,8 @@ export class JuicerBoard extends LitElement {
 								m => m[1].id,
 								([coord, piece]) => html`
 									<juicer-piece
+										board-width="${this.clientWidth}"
+										board-height="${this.clientHeight}"
 										.piece="${piece!}"
 										coord="${coord}"
 										?interactive="${this.interactive}"
@@ -610,6 +612,8 @@ export class JuicerBoard extends LitElement {
 					? html`
 							<div class="ghost">
 								<juicer-piece
+									board-width="${this.clientWidth}"
+									board-height="${this.clientHeight}"
 									.piece="${this.ghost.piece}"
 									coord="${this.ghost.coord}"
 									?ghost="${true}"
