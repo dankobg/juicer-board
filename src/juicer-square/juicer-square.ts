@@ -13,6 +13,9 @@ export class JuicerSquare extends LitElement {
 	@property({ type: Boolean }) selected: boolean = false;
 	@property({ type: Boolean }) bordered: boolean = false;
 	@property({ type: Boolean }) highlighted: boolean = false;
+	@property({ reflect: true }) get coord(): string {
+		return this.square.coord;
+	}
 
 	protected override render() {
 		return html`
