@@ -393,6 +393,9 @@ export class JuicerBoard extends LitElement {
 		this.updateComplete.then(() => {
 			for (const change of changes) {
 				const jp = this.shadowRoot!.querySelector(`juicer-piece[id='${change.piece.id}']`) as JuicerPiece;
+				if (!jp) {
+					return;
+				}
 				const [animation, translateTo, elm] = this.createAnimation(jp.pieceElement, change);
 				animation.id = `${change.op}_${crypto.randomUUID()}`;
 				this.enqueuePendingAnimation(animation, translateTo, elm, parallelAnimations);
