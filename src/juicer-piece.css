@@ -18,9 +18,15 @@
 	background-size: contain;
 	background-position: center;
 	background-repeat: no-repeat;
-	cursor: pointer;
 	z-index: 60;
 	touch-action: none;
+	transform: translate(
+		calc(var(--col) * var(--board-width) / var(--cols)),
+		calc(var(--row) * var(--board-height) / var(--rows))
+	);
+}
+.piece[data-interactive='true'] {
+	cursor: pointer;
 }
 .piece[data-dragging='true'] {
 	z-index: 65;
@@ -29,7 +35,6 @@
 	z-index: 59;
 	opacity: 0.35;
 }
-
 .piece[data-symbol='r'] {
 	background-image: var(--br-theme);
 }

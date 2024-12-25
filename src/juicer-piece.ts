@@ -1,46 +1,56 @@
 import { LitElement, html, unsafeCSS } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
-import { COLS, Color, Coord, Piece, ROWS, Square, WHITE } from '../model';
-import { getSquareIndexFromPointer } from '../util';
-import juicerPieceCss from './juicer-piece.css?inline';
+import {
+	PieceFenSymbol,
+	Coord,
+	Color,
+	WHITE,
+	BLACK,
+	rowColFromCoord,
+	getSquareCoordFromPointer,
+	indexFromCoord,
+} from './model';
 import { ifDefined } from 'lit/directives/if-defined.js';
+import juicerPieceStyles from './juicer-piece.css?inline';
 
 @customElement('juicer-piece')
 export class JuicerPiece extends LitElement {
-	static override styles = unsafeCSS(juicerPieceCss);
+	static override styles = unsafeCSS(juicerPieceStyles);
 
+	get pieceElement(): HTMLDivElement {
+		return this.shadowRoot!.querySelector('.piece')!;
+	}
+
+	@property({ attribute: 'piece-id' }) pieceId!: string;
+	@property() piece!: PieceFenSymbol;
+	@property() coord!: Coord;
+	@property() orientation: Color = WHITE;
 	@property({ type: Boolean }) interactive: boolean = false;
 	@property({ type: Boolean }) ghost: boolean = false;
 	@property({ type: Boolean }) checked: boolean = false;
-	@property({ type: Object }) piece!: Piece;
-	@property() coord!: Coord;
 	@property({ type: Boolean }) dragging: boolean = false;
-	@property({ type: Number, attribute: 'board-width' }) boardWidth: number = 0;
-	@property({ type: Number, attribute: 'board-height' }) boardHeight: number = 0;
-	@property() orientation: Color = WHITE;
-	@property({ reflect: true }) get id(): string {
-		return this.piece.id;
+	@property() get color(): Color {
+		return this.piece === this.piece.toUpperCase() ? WHITE : BLACK;
 	}
 
 	private onPointerDown(event: PointerEvent): void {
 		if (event.button !== 0 || event.ctrlKey) {
 			return;
 		}
-
 		const { target, clientX, clientY, offsetX, offsetY } = event;
 		const pieceElement = target as HTMLDivElement;
 		const pieceRect = pieceElement.getBoundingClientRect();
 		const pieceId = pieceElement.dataset.id!;
-		const squareIndex = getSquareIndexFromPointer(event);
-
+		const coord = getSquareCoordFromPointer(event, this.orientation);
+		const index = indexFromCoord(coord, this.orientation);
 		pieceElement.setPointerCapture(event.pointerId);
-		pieceElement.style.userSelect = 'none';
-
+		pieceElement.style.setProperty('user-select', 'none');
 		const piecePointerDownEvent = new PiecePointerDownEvent({
 			pieceElement,
 			pieceId,
 			pieceRect,
-			squareIndex,
+			coord,
+			index,
 			clientX,
 			clientY,
 			offsetX,
@@ -53,19 +63,18 @@ export class JuicerPiece extends LitElement {
 		if (event.button !== 0 || event.ctrlKey) {
 			return;
 		}
-
 		const { target, clientX, clientY, offsetX, offsetY } = event;
 		const pieceElement = target as HTMLDivElement;
 		const pieceId = pieceElement.dataset.id!;
-		const squareIndex = getSquareIndexFromPointer(event);
-
+		const coord = getSquareCoordFromPointer(event, this.orientation);
+		const index = indexFromCoord(coord, this.orientation);
 		pieceElement.releasePointerCapture(event.pointerId);
-		pieceElement.style.userSelect = 'auto';
-
+		pieceElement.style.setProperty('user-select', 'auto');
 		const piecePointerUpEvent = new PiecePointerUpEvent({
 			pieceElement,
 			pieceId,
-			squareIndex,
+			coord,
+			index,
 			clientX,
 			clientY,
 			offsetX,
@@ -76,20 +85,19 @@ export class JuicerPiece extends LitElement {
 
 	private onPointerMove(event: PointerEvent): void {
 		event.stopPropagation();
-
 		if (!this.dragging) {
 			return;
 		}
-
 		const { target, clientX, clientY, offsetX, offsetY } = event;
 		const pieceElement = target as HTMLDivElement;
 		const pieceId = pieceElement.dataset.id!;
-		const squareIndex = getSquareIndexFromPointer(event);
-
+		const coord = getSquareCoordFromPointer(event, this.orientation);
+		const index = indexFromCoord(coord, this.orientation);
 		const piecePointerMoveEvent = new PiecePointerMoveEvent({
 			pieceElement,
 			pieceId,
-			squareIndex,
+			coord,
+			index,
 			clientX,
 			clientY,
 			offsetX,
@@ -100,8 +108,8 @@ export class JuicerPiece extends LitElement {
 
 	private onPointerCancel(event: PointerEvent): void {
 		const pieceElement = event.target as HTMLDivElement;
-		pieceElement.style.userSelect = 'auto';
-
+		pieceElement.releasePointerCapture(event.pointerId);
+		pieceElement.style.setProperty('user-select', 'auto');
 		const piecePointerCancelEvent = new PiecePointerCancelEvent();
 		this.dispatchEvent(piecePointerCancelEvent);
 	}
@@ -114,21 +122,18 @@ export class JuicerPiece extends LitElement {
 		event.preventDefault();
 	}
 
-	get pieceElement(): HTMLDivElement {
-		return this.shadowRoot!.querySelector('.piece')!;
-	}
-
 	protected override render() {
-		const { row, col } = Square.getDataFromCoord(this.coord, this.orientation);
-		const translate = `transform: translate(${(col * this.boardWidth) / COLS}px, ${(row * this.boardHeight) / ROWS}px)`;
-
+		const [row, col] = rowColFromCoord(this.coord, this.orientation);
 		return html`
 			<div
 				class="piece"
-				data-id="${this.piece.id}"
+				part="piece-${this.pieceId}"
+				style="--row: ${row};--col: ${col}"
+				data-id="${this.pieceId}"
 				data-coord="${this.coord}"
-				data-color="${this.piece.color}"
-				data-symbol="${this.piece.fenSymbol}"
+				data-color="${this.color}"
+				data-symbol="${this.piece}"
+				data-interactive="${ifDefined(this.interactive ? true : undefined)}"
 				data-dragging="${ifDefined(this.dragging && !this.ghost ? true : undefined)}"
 				data-ghost="${ifDefined(this.ghost ? true : undefined)}"
 				data-checked="${ifDefined(this.checked ? true : undefined)}"
@@ -138,7 +143,6 @@ export class JuicerPiece extends LitElement {
 				@pointercancel="${this.interactive && !this.ghost ? this.onPointerCancel : undefined}"
 				@touchstart="${this.interactive && !this.ghost ? this.onTouchStart : undefined}"
 				@dragstart="${this.interactive && !this.ghost ? this.onDragStart : undefined}"
-				style="${translate}"
 			></div>
 		`;
 	}
@@ -146,18 +150,17 @@ export class JuicerPiece extends LitElement {
 
 export class PiecePointerDownEvent extends Event {
 	static eventType = 'piece:pointerdown';
-
 	data: {
 		pieceElement: HTMLDivElement;
 		pieceId: string;
 		pieceRect: DOMRect;
-		squareIndex: number;
+		coord: Coord | null;
+		index: number;
 		clientX: number;
 		clientY: number;
 		offsetX: number;
 		offsetY: number;
 	};
-
 	constructor(data: PiecePointerDownEvent['data']) {
 		super(PiecePointerDownEvent.eventType, { bubbles: true, composed: true, cancelable: false });
 		this.data = data;
@@ -166,17 +169,16 @@ export class PiecePointerDownEvent extends Event {
 
 export class PiecePointerUpEvent extends Event {
 	static eventType = 'piece:pointerup';
-
 	data: {
 		pieceElement: HTMLDivElement;
 		pieceId: string;
-		squareIndex: number;
+		coord: Coord | null;
+		index: number;
 		clientX: number;
 		clientY: number;
 		offsetX: number;
 		offsetY: number;
 	};
-
 	constructor(data: PiecePointerUpEvent['data']) {
 		super(PiecePointerUpEvent.eventType, { bubbles: true, composed: true, cancelable: false });
 		this.data = data;
@@ -185,17 +187,16 @@ export class PiecePointerUpEvent extends Event {
 
 export class PiecePointerMoveEvent extends Event {
 	static eventType = 'piece:pointermove';
-
 	data: {
 		pieceElement: HTMLDivElement;
 		pieceId: string;
-		squareIndex: number;
+		coord: Coord | null;
+		index: number;
 		clientX: number;
 		clientY: number;
 		offsetX: number;
 		offsetY: number;
 	};
-
 	constructor(data: PiecePointerMoveEvent['data']) {
 		super(PiecePointerMoveEvent.eventType, { bubbles: true, composed: true, cancelable: false });
 		this.data = data;
@@ -204,7 +205,6 @@ export class PiecePointerMoveEvent extends Event {
 
 export class PiecePointerCancelEvent extends Event {
 	static eventType = 'piece:pointercancel';
-
 	constructor() {
 		super(PiecePointerCancelEvent.eventType, { bubbles: true, composed: true, cancelable: false });
 	}
@@ -213,5 +213,12 @@ export class PiecePointerCancelEvent extends Event {
 declare global {
 	interface HTMLElementTagNameMap {
 		'juicer-piece': JuicerPiece;
+	}
+
+	interface HTMLElementEventMap {
+		'piece:pointerdown': PiecePointerDownEvent;
+		'piece:pointerup': PiecePointerUpEvent;
+		'piece:pointermove': PiecePointerMoveEvent;
+		'piece:pointercancel': PiecePointerCancelEvent;
 	}
 }

@@ -30,24 +30,26 @@
 		"dev": "vite",
 		"build": "tsc && vite build",
 		"preview": "vite preview",
-		"test": "echo \"No test specified\""
+		"test": "node --import tsx --test ./src/**/*.test.ts"
 	},
 	"dependencies": {
-		"@lit-labs/observers": "^2.0.2",
-		"lit": "^3.1.4"
+		"@lit-labs/observers": "^2.0.4",
+		"lit": "^3.2.1"
 	},
 	"devDependencies": {
 		"@semantic-release/git": "^10.0.1",
-		"@typescript-eslint/eslint-plugin": "^7.16.0",
-		"@typescript-eslint/parser": "^7.16.0",
-		"eslint": "^8.57.0",
+		"@types/node": "^22.10.2",
+		"@typescript-eslint/eslint-plugin": "^8.18.0",
+		"@typescript-eslint/parser": "^8.18.0",
+		"eslint": "^9.16.0",
 		"eslint-config-prettier": "^9.1.0",
-		"eslint-plugin-lit": "^1.14.0",
-		"prettier": "^3.3.2",
-		"semantic-release": "^24.0.0",
-		"typescript": "^5.5.3",
-		"vite": "^5.3.3",
-		"vite-plugin-dts": "^3.9.1"
+		"eslint-plugin-lit": "^1.15.0",
+		"prettier": "^3.4.2",
+		"semantic-release": "^24.2.0",
+		"tsx": "^4.19.2",
+		"typescript": "^5.7.2",
+		"vite": "^6.0.3",
+		"vite-plugin-dts": "^4.3.0"
 	},
 	"release": {
 		"branches": [

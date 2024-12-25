@@ -1,3 +1,13 @@
+*,
+*::before,
+*::after {
+	box-sizing: border-box;
+}
+
+body {
+	margin: 0;
+}
+
 :root {
 	--board-theme: url('https://raw.githubusercontent.com/lichess-org/lila/89614657e9cfd285968aa502f6479c0620a5ac1b/public/images/board/svg/brown.svg');
 	--wr-theme: url('https://raw.githubusercontent.com/lichess-org/lila/89614657e9cfd285968aa502f6479c0620a5ac1b/public/piece/gioco/wR.svg');
@@ -12,4 +22,8 @@
 	--bk-theme: url('https://raw.githubusercontent.com/lichess-org/lila/89614657e9cfd285968aa502f6479c0620a5ac1b/public/piece/gioco/bK.svg');
 	--bq-theme: url('https://raw.githubusercontent.com/lichess-org/lila/89614657e9cfd285968aa502f6479c0620a5ac1b/public/piece/gioco/bQ.svg');
 	--bp-theme: url('https://raw.githubusercontent.com/lichess-org/lila/89614657e9cfd285968aa502f6479c0620a5ac1b/public/piece/gioco/bP.svg');
+}
+
+::view-transition-group(*) {
+	animation-duration: 300ms;
 }

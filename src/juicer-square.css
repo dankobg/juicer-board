@@ -1,0 +1,32 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+:host {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.square {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+}
+
+.square[data-highlighted="true"] {
+  background-color: rgba(165, 231, 59, 0.5);
+}
+
+.square[data-selected="true"] {
+  background-color: rgba(116, 79, 202, 0.5);
+}
+
+.square[data-bordered="true"] {
+  border: 3px solid rgb(201, 126, 77);
+}
