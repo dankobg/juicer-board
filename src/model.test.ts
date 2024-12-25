@@ -20,7 +20,6 @@ import {
 	indexFromCoord,
 	NumPair,
 	Position,
-	positionToFen,
 	RankFile,
 	rankFileFromCoord,
 	rankFileFromRowCol,

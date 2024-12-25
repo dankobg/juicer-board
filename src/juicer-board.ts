@@ -64,8 +64,9 @@ export class JuicerBoard extends LitElement {
 	private _animationInDuration?: number;
 	private _animationOutDuration?: number;
 	private _animationMoveDuration?: number;
-	private vt: ViewTransition | undefined;
 	private lastMoveControlType: 'api' | 'input' | undefined;
+	// @ts-ignore
+	private vt: ViewTransition | undefined;
 
 	@property() fen: string = FEN_EMPTY;
 	@property() orientation: Color = WHITE;
