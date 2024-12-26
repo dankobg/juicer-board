@@ -97,17 +97,18 @@ export function positionToFen(position: Position): string {
 			}
 			fen += pd.piece;
 		}
-		if ((i + 1) % 8 === 0 && i < 63) {
+		if ((i + 1) % 8 === 0) {
 			if (emptySquareCount > 0) {
 				fen += emptySquareCount.toString();
 				emptySquareCount = 0;
 			}
-			fen += '/';
+			if (i < COORDS.length - 1) {
+				fen += '/';
+			}
 		}
 	}
 	return fen;
 }
-
 export function indexFromCoord(coord: Coord | null, orientation: Color): number {
 	if (coord === null) {
 		return SQUARE_NONE;
