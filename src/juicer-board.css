@@ -9,8 +9,8 @@
 	position: relative;
 	min-width: var(--min-size);
 	min-height: var(--min-size);
-	width: calc(100dvh - 5rem);
-	height: calc(100dvh - 5rem);
+	width: var(--board-width, calc(100vmin - 1.5rem));
+	height: var(--board-height, calc(100vmin - 1.5rem));
 }
 
 .board {

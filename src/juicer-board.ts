@@ -52,11 +52,11 @@ export class JuicerBoard extends LitElement {
 		config: { box: 'content-box' },
 		callback: (entries: ResizeObserverEntry[]) => {
 			if (entries.length > 0) {
-				const size = entries[0].contentRect.width;
+				const size = Math.round(entries[0].contentRect.width);
 				this.boardSize = size;
 				this.style.setProperty('--min-size', `${this.minSize}px`);
-				this.boardElm.style.setProperty('--board-width', `${size}px`);
-				this.boardElm.style.setProperty('--board-height', `${size}px`);
+				this.style.setProperty('--board-width', `${size}px`);
+				this.style.setProperty('--board-height', `${size}px`);
 			}
 		},
 	});
@@ -103,6 +103,7 @@ export class JuicerBoard extends LitElement {
 		this._animationMoveDuration = value;
 	}
 	@state() boardSize: number = 0;
+	@state() maxSize?: number;
 	@state() get coords() {
 		return this.orientation === WHITE ? COORDS : COORDS_REVERSED;
 	}
@@ -508,6 +509,10 @@ export class JuicerBoard extends LitElement {
 		document.adoptedStyleSheets = [sheet];
 	}
 
+	protected firstUpdated(): void {
+		this.maxSize = Math.min(window.innerHeight, window.innerWidth);
+	}
+
 	protected willUpdate(changedProperties: PropertyValues<this>): void {
 		if (changedProperties.has('fen')) {
 			const fen = ['new', 'start'].includes(this.fen) ? FEN_START : this.fen;
@@ -533,7 +538,11 @@ export class JuicerBoard extends LitElement {
 					ranks-position="${ifDefined(this.ranksPosition)}"
 					files-position="${ifDefined(this.filesPosition)}"
 				></juicer-coords>
-				<juicer-resizer .target="${this}" min-size="${this.minSize}"></juicer-resizer>
+				<juicer-resizer
+					.target="${this}"
+					min-size="${this.minSize}"
+					max-size="${ifDefined(this.maxSize)}"
+				></juicer-resizer>
 				<div class="squares">
 					${map(
 						this.coords,
