@@ -245,18 +245,18 @@ export class JuicerBoard extends LitElement {
 		const src = this.srcSquare!;
 		const pieceData = this.getPiece(src)!;
 		const moveFinishEvent = new MoveFinishEvent({ src, dest, pieceElement: elm, pieceData });
+		this.dispatchEvent(moveFinishEvent);
 		if (moveFinishEvent.defaultPrevented) {
+			translateElement(elm, this.lastPos.x, this.lastPos.y);
 			this.srcSquare = null;
 			this.dragOverSquare = null;
 			this.lastPos = { x: 0, y: 0 };
-			translateElement(elm, this.lastPos.x, this.lastPos.y);
 			return;
 		}
 		const afterPosition = new Map(this.position);
 		afterPosition.set(dest, pieceData);
 		afterPosition.delete(src);
 		this.position = afterPosition;
-		this.dispatchEvent(moveFinishEvent);
 		const [x, y] = getDeltaXYFromCoord(dest, this.boardSize / 8, this.boardSize / 8, this.orientation);
 		const squareTopLeftX = x + boardElement.offsetLeft;
 		const squareTopLeftY = y + boardElement.offsetTop;
