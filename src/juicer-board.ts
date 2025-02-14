@@ -52,7 +52,7 @@ export class JuicerBoard extends LitElement {
 		config: { box: 'content-box' },
 		callback: (entries: ResizeObserverEntry[]) => {
 			if (entries.length > 0) {
-				const size = Math.round(entries[0].contentRect.width);
+				const size = Math.round(entries[0]!.contentRect.width);
 				this.boardSize = size;
 				this.style.setProperty('--min-size', `${this.minSize}px`);
 				this.style.setProperty('--board-width', `${size}px`);
@@ -142,7 +142,7 @@ export class JuicerBoard extends LitElement {
 		if (this.showGhost) {
 			this.ghost = {
 				coord,
-				pieceData: { id: crypto.randomUUID(), piece: pieceElement.dataset.symbol as PieceFenSymbol },
+				pieceData: { id: crypto.randomUUID(), piece: pieceElement.dataset['symbol'] as PieceFenSymbol },
 			};
 		}
 		this.dragging = true;
@@ -278,7 +278,7 @@ export class JuicerBoard extends LitElement {
 			if (i % ROWS === 0) {
 				s += ` ${rank} |`;
 			}
-			const pd = position.get(this.coords[i]);
+			const pd = position.get(this.coords[i]!);
 			s += ` ${pd?.piece ?? '-'} `;
 
 			if (i % COLS === 7) {
@@ -423,11 +423,11 @@ export class JuicerBoard extends LitElement {
 		document.adoptedStyleSheets = [sheet];
 	}
 
-	protected firstUpdated(): void {
+	protected override firstUpdated(): void {
 		this.maxSize = Math.min(window.innerHeight, window.innerWidth);
 	}
 
-	protected willUpdate(changedProperties: PropertyValues<this>): void {
+	protected override willUpdate(changedProperties: PropertyValues<this>): void {
 		if (changedProperties.has('fen')) {
 			const fen = ['new', 'start'].includes(this.fen) ? FEN_START : this.fen;
 			this.loadFromFen(fen);
@@ -452,8 +452,9 @@ export class JuicerBoard extends LitElement {
 					ranks-position="${ifDefined(this.ranksPosition)}"
 					files-position="${ifDefined(this.filesPosition)}"
 				></juicer-coords>
+
 				<juicer-resizer
-					.target="${this}"
+					.target="${this as any}"
 					min-size="${this.minSize}"
 					max-size="${ifDefined(this.maxSize)}"
 				></juicer-resizer>
@@ -477,7 +478,7 @@ export class JuicerBoard extends LitElement {
 											piece="${pd.piece}"
 											coord="${coord}"
 											?interactive="${this.interactive}"
-											?dragging="${this.draggedElm?.dataset?.id === pd.id}"
+											?dragging="${this.draggedElm?.dataset?.['id'] === pd.id}"
 											orientation="${this.orientation}"
 											@piece:pointerdown="${this.onPiecePointerDown}"
 											@piece:pointerup="${this.onPiecePointerUp}"

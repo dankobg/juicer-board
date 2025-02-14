@@ -40,7 +40,7 @@ export class JuicerPiece extends LitElement {
 		const { target, clientX, clientY, offsetX, offsetY } = event;
 		const pieceElement = target as HTMLDivElement;
 		const pieceRect = pieceElement.getBoundingClientRect();
-		const pieceId = pieceElement.dataset.id!;
+		const pieceId = pieceElement.dataset['id']!;
 		const coord = getSquareCoordFromPointer(event, this.orientation);
 		const index = indexFromCoord(coord, this.orientation);
 		pieceElement.setPointerCapture(event.pointerId);
@@ -65,7 +65,7 @@ export class JuicerPiece extends LitElement {
 		}
 		const { target, clientX, clientY, offsetX, offsetY } = event;
 		const pieceElement = target as HTMLDivElement;
-		const pieceId = pieceElement.dataset.id!;
+		const pieceId = pieceElement.dataset['id']!;
 		const coord = getSquareCoordFromPointer(event, this.orientation);
 		const index = indexFromCoord(coord, this.orientation);
 		pieceElement.releasePointerCapture(event.pointerId);
@@ -90,7 +90,7 @@ export class JuicerPiece extends LitElement {
 		}
 		const { target, clientX, clientY, offsetX, offsetY } = event;
 		const pieceElement = target as HTMLDivElement;
-		const pieceId = pieceElement.dataset.id!;
+		const pieceId = pieceElement.dataset['id']!;
 		const coord = getSquareCoordFromPointer(event, this.orientation);
 		const index = indexFromCoord(coord, this.orientation);
 		const piecePointerMoveEvent = new PiecePointerMoveEvent({

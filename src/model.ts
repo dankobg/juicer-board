@@ -66,7 +66,7 @@ export function fenToPosition(fen: string): Position {
 	const [boardPosition] = fen.split(' ');
 	let row = 0;
 	let col = 0;
-	for (const char of boardPosition) {
+	for (const char of boardPosition!) {
 		if (char === '/') {
 			row++;
 			col = 0;
@@ -86,7 +86,7 @@ export function positionToFen(position: Position): string {
 	let fen = '';
 	let emptySquareCount = 0;
 	for (let i = 0; i < COORDS.length; i++) {
-		const coord = COORDS[i];
+		const coord = COORDS[i]!;
 		const pd = position.get(coord);
 		if (!pd) {
 			emptySquareCount++;
@@ -118,8 +118,8 @@ export function indexFromCoord(coord: Coord | null, orientation: Color): number 
 }
 
 export function rankFileFromRowCol(row: Row, col: Col, orientation: Color): RankFile {
-	const rank = orientation === 'w' ? RANKS[7 - row] : RANKS[row];
-	const file = orientation === 'w' ? FILES[col] : FILES[7 - col];
+	const rank = orientation === 'w' ? RANKS[7 - row]! : RANKS[row]!;
+	const file = orientation === 'w' ? FILES[col]! : FILES[7 - col]!;
 	return [rank, file];
 }
 
