@@ -228,6 +228,7 @@ export class JuicerBoard extends LitElement {
 	): void {
 		this.lastMoveControlType = 'input';
 		translateElement(elm, this.lastPos.x, this.lastPos.y);
+		elm.style.transform = ''; // tmp fix not sure if this is ideal, i need to get rid of the transform so the one with css variable gets used
 		this.srcSquare = null;
 		this.lastPos = { x: 0, y: 0 };
 		const moveCancelEvent = new MoveCancelEvent({ src, dest, pieceElement, pieceData });
