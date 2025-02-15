@@ -33,12 +33,12 @@
 		"test": "node --import tsx --test ./src/**/*.test.ts"
 	},
 	"dependencies": {
-		"@lit-labs/observers": "^2.0.4",
+		"@lit-labs/observers": "^2.0.5",
 		"lit": "^3.2.1"
 	},
 	"devDependencies": {
 		"@semantic-release/git": "^10.0.1",
-		"@types/node": "^22.13.2",
+		"@types/node": "^22.13.4",
 		"@typescript-eslint/eslint-plugin": "^8.24.0",
 		"@typescript-eslint/parser": "^8.24.0",
 		"eslint": "^9.20.1",
