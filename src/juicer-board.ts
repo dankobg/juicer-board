@@ -54,7 +54,6 @@ export class JuicerBoard extends LitElement {
 			if (entries.length > 0) {
 				const size = Math.round(entries[0]!.contentRect.width);
 				this.boardSize = size;
-				this.style.setProperty('--min-size', `${this.minSize}px`);
 				this.style.setProperty('--board-width', `${size}px`);
 				this.style.setProperty('--board-height', `${size}px`);
 			}
@@ -71,6 +70,7 @@ export class JuicerBoard extends LitElement {
 	@property() fen: string = FEN_EMPTY;
 	@property() orientation: Color = WHITE;
 	@property({ type: Number, attribute: 'min-size' }) minSize: number = 240;
+	@property({ type: Number, attribute: 'max-size' }) maxSize?: number;
 	@property({ type: Boolean }) interactive: boolean = false;
 	@property({ type: Boolean, attribute: 'show-ghost' }) showGhost: boolean = false;
 	@property({ attribute: 'board-theme' }) boardTheme?: string;
@@ -103,7 +103,6 @@ export class JuicerBoard extends LitElement {
 		this._animationMoveDuration = value;
 	}
 	@state() boardSize: number = 0;
-	@state() maxSize?: number;
 	@state() get coords() {
 		return this.orientation === WHITE ? COORDS : COORDS_REVERSED;
 	}
@@ -425,7 +424,9 @@ export class JuicerBoard extends LitElement {
 	}
 
 	protected override firstUpdated(): void {
-		this.maxSize = Math.min(window.innerHeight, window.innerWidth);
+		if (!this.maxSize) {
+			this.maxSize = Math.min(window.innerHeight, window.innerWidth);
+		}
 	}
 
 	protected override willUpdate(changedProperties: PropertyValues<this>): void {
@@ -441,6 +442,12 @@ export class JuicerBoard extends LitElement {
 		}
 		if (changedProperties.has('positionCopy')) {
 			this.updateAdoptedStylesheet();
+		}
+		if (changedProperties.has('minSize')) {
+			this.style.setProperty('--min-size', `${this.minSize}px`);
+		}
+		if (changedProperties.has('maxSize')) {
+			this.style.setProperty('--max-size', `${this.maxSize}px`);
 		}
 	}
 

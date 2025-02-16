@@ -9,8 +9,8 @@
 	position: relative;
 	min-width: var(--min-size);
 	min-height: var(--min-size);
-	/* width: var(--board-width, calc(100vmin - 1.5rem));
-	height: var(--board-height, calc(100vmin - 1.5rem)); */
+	max-width: var(--max-size);
+	max-height: var(--max-size);
 	width: min(100%, min(70rem, calc(100vh - 1.5rem)));
 	aspect-ratio: 1;
 }

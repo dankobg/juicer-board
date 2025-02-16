@@ -64,15 +64,6 @@ export class JuicerResizer extends LitElement {
 		this.target.style.setProperty('height', `${newSize}px`);
 	}
 
-	protected override updated(changedProperties: PropertyValues): void {
-		if (changedProperties.has('minSize')) {
-			if (this.target.clientWidth < this.minSize) {
-				this.target.style.setProperty('width', `${this.minSize}px`);
-				this.target.style.setProperty('height', `${this.minSize}px`);
-			}
-		}
-	}
-
 	protected override render() {
 		return html`
 			<div class="resizer" @pointerdown="${this.startResize}">
