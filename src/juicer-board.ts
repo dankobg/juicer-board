@@ -30,7 +30,6 @@ import {
 } from './model';
 import { ResizeController } from '@lit-labs/observers/resize-controller.js';
 import { JuicerResizer } from './juicer-resizer.ts';
-
 import './juicer-square.ts';
 import './juicer-piece.ts';
 import './juicer-coords.ts';
@@ -78,6 +77,7 @@ export class JuicerBoard extends LitElement {
 	@property({ attribute: 'coords-placement' }) coordsPlacement: CoordsPlacement;
 	@property({ attribute: 'ranks-position' }) ranksPosition: CoordsRanksPosition;
 	@property({ attribute: 'files-position' }) filesPosition: CoordsFilesPosition;
+	@property({ attribute: 'show-resizer', type: Boolean }) showResizer: boolean = false;
 	@property({ type: Number, attribute: 'anim-snapback-dur' }) animationSnapbackDuration: number = 0;
 	@property({ type: Number, attribute: 'anim-snap-dur' }) animationSnapDuration: number = 0;
 	@property({ type: Number, attribute: 'anim-dur' }) animationDuration: number = 300;
@@ -461,11 +461,16 @@ export class JuicerBoard extends LitElement {
 					files-position="${ifDefined(this.filesPosition)}"
 				></juicer-coords>
 
-				<juicer-resizer
-					.target="${this as any}"
-					min-size="${this.minSize}"
-					max-size="${ifDefined(this.maxSize)}"
-				></juicer-resizer>
+				${this.showResizer
+					? html`
+							<juicer-resizer
+								.target="${this as any}"
+								min-size="${this.minSize}"
+								max-size="${ifDefined(this.maxSize)}"
+							></juicer-resizer>
+						`
+					: nothing}
+
 				<div class="squares">
 					${map(
 						this.coords,
