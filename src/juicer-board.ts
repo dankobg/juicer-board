@@ -331,6 +331,26 @@ export class JuicerBoard extends LitElement {
 		}
 	}
 
+	setPosition(position: Position): void {
+		this.lastMoveControlType = 'api';
+		const beforePosition = new Map(this.position);
+		const afterPosition = new Map(position);
+		const changes = getPositionChanges(beforePosition, afterPosition, this.orientation);
+		const movedChanges = changes.filter(c => c.op === 'move');
+		for (const mc of movedChanges) {
+			afterPosition.set(mc.dest, mc.pieceData);
+		}
+		this.positionCopy = afterPosition;
+		const updater = () => {
+			this.position = afterPosition;
+		};
+		if (document.startViewTransition && this.lastMoveControlType === 'api') {
+			this.vt = document.startViewTransition(updater);
+		} else {
+			updater();
+		}
+	}
+
 	setPiece(coord: Coord, piece: PieceFenSymbol): void {
 		this.lastMoveControlType = 'api';
 		const beforePosition = new Map(this.position);
