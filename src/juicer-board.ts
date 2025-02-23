@@ -47,6 +47,25 @@ import {
 	PiecePointerMoveEvent,
 	PiecePointerUpEvent,
 } from './juicer-piece.ts';
+export type {
+	Color,
+	Row,
+	Col,
+	Rank,
+	File,
+	Coord,
+	PieceFenSymbol,
+	PieceSymbol,
+	RowCol,
+	RankFile,
+	NumPair,
+	CoordsPlacement,
+	CoordsRanksPosition,
+	CoordsFilesPosition,
+	PieceData,
+	Position,
+	Change,
+} from './model';
 
 @customElement('juicer-board')
 export class JuicerBoard extends LitElement {
