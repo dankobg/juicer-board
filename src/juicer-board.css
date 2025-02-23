@@ -44,6 +44,10 @@
 	grid-area: board-stack;
 }
 
+.remove-clones {
+	grid-area: board-stack;
+}
+
 juicer-coords {
 	grid-area: board-stack;
 }

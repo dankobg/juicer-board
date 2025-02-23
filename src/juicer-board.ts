@@ -27,6 +27,11 @@ import {
 	WHITE,
 	positionToFen,
 	fenToPosition,
+	Change,
+	assertUnreachable,
+	rowColFromCoord,
+	genId,
+	hideElement,
 } from './model';
 import { ResizeController } from '@lit-labs/observers/resize-controller.js';
 import { JuicerResizer } from './juicer-resizer.ts';
@@ -36,6 +41,7 @@ import './juicer-coords.ts';
 import './juicer-resizer.ts';
 import { repeat } from 'lit/directives/repeat.js';
 import {
+	JuicerPiece,
 	PiecePointerCancelEvent,
 	PiecePointerDownEvent,
 	PiecePointerMoveEvent,
@@ -62,9 +68,6 @@ export class JuicerBoard extends LitElement {
 	private _animationInDuration?: number;
 	private _animationOutDuration?: number;
 	private _animationMoveDuration?: number;
-	private lastMoveControlType: 'api' | 'input' | undefined;
-	// @ts-ignore
-	private vt: ViewTransition | undefined;
 
 	@property() fen: string = FEN_EMPTY;
 	@property() orientation: Color = WHITE;
@@ -107,7 +110,6 @@ export class JuicerBoard extends LitElement {
 		return this.orientation === WHITE ? COORDS : COORDS_REVERSED;
 	}
 	@state() position: Position = new Map();
-	@state() positionCopy: Position = new Map();
 	@state() dragging: boolean = false;
 	@state() draggedElm: HTMLElement | null = null;
 	@state() pieceOffsetWidth: number = 0;
@@ -119,12 +121,15 @@ export class JuicerBoard extends LitElement {
 	@state() highlightedSquares: Coord[] = [];
 	@state() lastPos: { x: number; y: number } = { x: 0, y: 0 };
 	@state() ghost: { pieceData: PieceData; coord: Coord } | null = null;
+	@state() animations: Animation[] = [];
+	@state() animationsQueued: number = 0;
+	@state() animationsFinished: number = 0;
+	@state() removeClonesPosition: Position = new Map();
 	@query('.board') boardElm!: HTMLElement;
 	@query('juicer-resizer') juicerResizerElm!: JuicerResizer;
 
 	private onPiecePointerDown(event: PiecePointerDownEvent): void {
 		event.stopPropagation();
-		this.lastMoveControlType = 'input';
 		const { coord, pieceElement, pieceRect, clientX, clientY } = event.data;
 		if (!coord) {
 			return;
@@ -141,7 +146,7 @@ export class JuicerBoard extends LitElement {
 		if (this.showGhost) {
 			this.ghost = {
 				coord,
-				pieceData: { id: crypto.randomUUID(), piece: pieceElement.dataset['symbol'] as PieceFenSymbol },
+				pieceData: { id: genId(), piece: pieceElement.dataset['symbol'] as PieceFenSymbol },
 			};
 		}
 		this.dragging = true;
@@ -158,7 +163,6 @@ export class JuicerBoard extends LitElement {
 
 	private onPiecePointerUp(event: PiecePointerUpEvent): void {
 		event.stopPropagation();
-		this.lastMoveControlType = 'input';
 		if (!this.dragging) {
 			return;
 		}
@@ -191,7 +195,6 @@ export class JuicerBoard extends LitElement {
 
 	private onPiecePointerCancel(event: PiecePointerCancelEvent): void {
 		event.stopPropagation();
-		this.lastMoveControlType = 'input';
 		this.dragging = false;
 		this.draggedElm = null;
 		this.ghost = null;
@@ -225,9 +228,8 @@ export class JuicerBoard extends LitElement {
 		pieceElement: HTMLElement,
 		pieceData: PieceData
 	): void {
-		this.lastMoveControlType = 'input';
 		translateElement(elm, this.lastPos.x, this.lastPos.y);
-		elm.style.transform = ''; // tmp fix not sure if this is ideal, i need to get rid of the transform so the one with css variable gets used
+		elm.style.removeProperty('transform'); // tmp fix not sure if this is ideal, i need to get rid of the transform so the one with css variable gets used
 		this.srcSquare = null;
 		this.lastPos = { x: 0, y: 0 };
 		const moveCancelEvent = new MoveCancelEvent({ src, dest, pieceElement, pieceData });
@@ -241,7 +243,6 @@ export class JuicerBoard extends LitElement {
 		clientY: number,
 		boardElement: HTMLElement
 	) {
-		this.lastMoveControlType = 'input';
 		const src = this.srcSquare!;
 		const pieceData = this.getPiece(src)!;
 		const moveFinishEvent = new MoveFinishEvent({ src, dest, pieceElement: elm, pieceData });
@@ -311,107 +312,210 @@ export class JuicerBoard extends LitElement {
 		return this.position.get(coord) ?? null;
 	}
 
-	loadFromFen(fen: string = FEN_START): void {
-		this.lastMoveControlType = 'api';
-		const beforePosition = new Map(this.position);
-		const afterPosition = fenToPosition(fen);
-		const changes = getPositionChanges(beforePosition, afterPosition, this.orientation);
+	private getPositionChangesWithMovedPieceIds(
+		before: Position,
+		after: Position,
+		orientation: Color
+	): [Change[], Position] {
+		const afterPosition = new Map(after);
+		const changes = getPositionChanges(before, afterPosition, orientation);
 		const movedChanges = changes.filter(c => c.op === 'move');
 		for (const mc of movedChanges) {
 			afterPosition.set(mc.dest, mc.pieceData);
 		}
-		this.positionCopy = afterPosition;
-		const updater = () => {
-			this.position = afterPosition;
+		return [changes, afterPosition];
+	}
+
+	private createPieceEnterAnimation(elm: HTMLElement, coord: Coord): [Animation, () => void] {
+		const [row, col] = rowColFromCoord(coord, this.orientation);
+		const deltaX = col * (this.clientWidth / COLS);
+		const deltaY = row * (this.clientHeight / ROWS);
+		const keyframes: Keyframe[] = [
+			{ opacity: 0, transform: `translate(${deltaX}px, ${deltaY}px)` },
+			{ opacity: 1, transform: `translate(${deltaX}px, ${deltaY}px)` },
+		];
+		const options: KeyframeAnimationOptions = {
+			duration: this.animationInDuration,
+			easing: 'ease-in',
 		};
-		if (document.startViewTransition && this.lastMoveControlType === 'api') {
-			this.vt = document.startViewTransition(updater);
-		} else {
-			updater();
+		const anim = new Animation(new KeyframeEffect(elm, keyframes, options));
+		anim.id = `piece-enter-${genId()}`;
+		const cb = () => {
+			translateElement(elm, deltaX, deltaY);
+			elm.style.removeProperty('transform'); // tmp fix not sure if this is ideal, i need to get rid of the transform so the one with css variable gets used
+		};
+		return [anim, cb];
+	}
+
+	private createPieceExitAnimation(elm: HTMLElement): [Animation, () => void] {
+		const keyframes: Keyframe[] = [{ opacity: 1 }, { opacity: 0 }];
+		const options: KeyframeAnimationOptions = {
+			duration: this.animationOutDuration,
+			easing: 'ease-out',
+		};
+		const anim = new Animation(new KeyframeEffect(elm, keyframes, options));
+		anim.id = `piece-exit-${genId()}`;
+		const cb = () => {
+			hideElement(elm);
+		};
+		return [anim, cb];
+	}
+
+	private createPieceMoveAnimation(elm: HTMLElement, src: Coord, dest: Coord): [Animation, () => void] {
+		const [srcRow, srcCol] = rowColFromCoord(src, this.orientation);
+		const [destRow, destCol] = rowColFromCoord(dest, this.orientation);
+		const srcDeltaX = srcCol * (this.clientWidth / COLS);
+		const srcDeltaY = srcRow * (this.clientHeight / ROWS);
+		const destDeltaX = destCol * (this.clientWidth / COLS);
+		const destDeltaY = destRow * (this.clientHeight / ROWS);
+		const keyframes: Keyframe[] = [
+			{ transform: `translate(${srcDeltaX}px, ${srcDeltaY}px)` },
+			{ transform: `translate(${destDeltaX}px, ${destDeltaY}px)` },
+		];
+		const options: KeyframeAnimationOptions = {
+			duration: this.animationMoveDuration,
+			easing: 'ease-in-out',
+		};
+		const anim = new Animation(new KeyframeEffect(elm, keyframes, options));
+		anim.id = `piece-move-${genId()}`;
+		const cb = () => {
+			translateElement(elm, destDeltaX, destDeltaY);
+			elm.style.removeProperty('transform'); // tmp fix not sure if this is ideal, i need to get rid of the transform so the one with css variable gets used
+		};
+		return [anim, cb];
+	}
+
+	private createPieceAnimation(elm: HTMLElement, change: Change): [Animation, () => void] {
+		switch (change.op) {
+			case 'add':
+				return this.createPieceEnterAnimation(elm, change.coord);
+			case 'remove':
+				return this.createPieceExitAnimation(elm);
+			case 'move':
+				return this.createPieceMoveAnimation(elm, change.src, change.dest);
+			default:
+				assertUnreachable(change);
 		}
+	}
+
+	private playAnimation(
+		animation: Animation,
+		opts?: { onFinish?: () => void; onCancel?: () => void; onRemove?: () => void }
+	): void {
+		animation.play();
+		if (opts?.onFinish) {
+			animation.addEventListener('finish', opts.onFinish, { once: true });
+		}
+		if (opts?.onCancel) {
+			animation.addEventListener('cancel', opts.onCancel, { once: true });
+		}
+		if (opts?.onRemove) {
+			animation.addEventListener('remove', opts.onRemove, { once: true });
+		}
+	}
+
+	private enqueueAnimation(anim: Animation): void {
+		this.animations = [...this.animations, anim];
+		this.animationsQueued++;
+	}
+
+	private dequeueAnimation(): void {
+		this.animations = this.animations.toSpliced(0, 1);
+		this.animationsFinished++;
+	}
+
+	private enqueuePieceAnimations(changes: Change[], afterPosition: Position): void {
+		if (changes.length === 0) {
+			return;
+		}
+		const removeClonesPos: Position = new Map();
+		const removedChanges = changes.filter(c => c.op === 'remove');
+		for (const rc of removedChanges) {
+			removeClonesPos.set(rc.coord, rc.pieceData);
+		}
+		this.removeClonesPosition = removeClonesPos;
+		this.position = afterPosition;
+		this.updateComplete.then(() => {
+			for (const change of changes) {
+				const jp = this.shadowRoot!.querySelector(`juicer-piece[piece-id='${change.pieceData.id}']`) as JuicerPiece;
+				if (!jp) {
+					return;
+				}
+				const [anim, cb] = this.createPieceAnimation(jp.pieceElement, change);
+				this.enqueueAnimation(anim);
+				const onDone = () => {
+					cb();
+					this.dequeueAnimation();
+				};
+				this.playAnimation(anim, { onFinish: onDone, onCancel: onDone });
+			}
+		});
+	}
+
+	loadFromFen(fen: string = FEN_START): void {
+		const beforePosition = new Map(this.position);
+		const tmpAfterPosition = fenToPosition(fen);
+		const [changes, afterPosition] = this.getPositionChangesWithMovedPieceIds(
+			beforePosition,
+			tmpAfterPosition,
+			this.orientation
+		);
+		this.enqueuePieceAnimations(changes, afterPosition);
 	}
 
 	setPosition(position: Position): void {
-		this.lastMoveControlType = 'api';
 		const beforePosition = new Map(this.position);
-		const afterPosition = new Map(position);
-		const changes = getPositionChanges(beforePosition, afterPosition, this.orientation);
-		const movedChanges = changes.filter(c => c.op === 'move');
-		for (const mc of movedChanges) {
-			afterPosition.set(mc.dest, mc.pieceData);
-		}
-		this.positionCopy = afterPosition;
-		const updater = () => {
-			this.position = afterPosition;
-		};
-		if (document.startViewTransition && this.lastMoveControlType === 'api') {
-			this.vt = document.startViewTransition(updater);
-		} else {
-			updater();
-		}
+		const tmpAfterPosition = new Map(position);
+		const [changes, afterPosition] = this.getPositionChangesWithMovedPieceIds(
+			beforePosition,
+			tmpAfterPosition,
+			this.orientation
+		);
+		this.enqueuePieceAnimations(changes, afterPosition);
 	}
 
 	setPiece(coord: Coord, piece: PieceFenSymbol): void {
-		this.lastMoveControlType = 'api';
 		const beforePosition = new Map(this.position);
-		const afterPosition = new Map(beforePosition);
-		afterPosition.set(coord, { id: crypto.randomUUID(), piece });
-		this.positionCopy = afterPosition;
-		const updater = () => {
-			this.position = afterPosition;
-		};
-		if (document.startViewTransition && this.lastMoveControlType === 'api') {
-			this.vt = document.startViewTransition(updater);
-		} else {
-			updater();
-		}
+		const tmpAfterPosition = new Map(beforePosition);
+		tmpAfterPosition.set(coord, { id: genId(), piece });
+		const [changes, afterPosition] = this.getPositionChangesWithMovedPieceIds(
+			beforePosition,
+			tmpAfterPosition,
+			this.orientation
+		);
+		this.enqueuePieceAnimations(changes, afterPosition);
 	}
 
 	removePiece(coord: Coord): void {
-		this.lastMoveControlType = 'api';
 		const beforePosition = new Map(this.position);
-		const afterPosition = new Map(beforePosition);
-		afterPosition.delete(coord);
-		this.positionCopy = afterPosition;
-		const updater = () => {
-			this.position = afterPosition;
-		};
-		if (document.startViewTransition && this.lastMoveControlType === 'api') {
-			this.vt = document.startViewTransition(updater);
-		} else {
-			updater();
-		}
+		const tmpAfterPosition = new Map(beforePosition);
+		tmpAfterPosition.delete(coord);
+		const [changes, afterPosition] = this.getPositionChangesWithMovedPieceIds(
+			beforePosition,
+			tmpAfterPosition,
+			this.orientation
+		);
+		this.enqueuePieceAnimations(changes, afterPosition);
 	}
 
 	movePiece(src: Coord, dest: Coord): void {
-		this.lastMoveControlType = 'api';
 		const beforePosition = new Map(this.position);
 		const srcPieceData = beforePosition.get(src);
 		if (!srcPieceData) {
 			return;
 		}
-		const afterPosition = new Map(beforePosition);
-		afterPosition.set(dest, srcPieceData);
-		afterPosition.delete(src);
-		const changes = getPositionChanges(beforePosition, afterPosition, this.orientation);
-		const movedChanges = changes.filter(c => c.op === 'move');
-		for (const mc of movedChanges) {
-			afterPosition.set(mc.dest, mc.pieceData);
-		}
-		this.positionCopy = afterPosition;
-		const updater = () => {
-			this.position = afterPosition;
-		};
-		if (document.startViewTransition && this.lastMoveControlType === 'api') {
-			this.vt = document.startViewTransition(updater);
-		} else {
-			updater();
-		}
+		const tmpAfterPosition = new Map(beforePosition);
+		tmpAfterPosition.set(dest, srcPieceData);
+		tmpAfterPosition.delete(src);
+		const [changes, afterPosition] = this.getPositionChangesWithMovedPieceIds(
+			beforePosition,
+			tmpAfterPosition,
+			this.orientation
+		);
+		this.enqueuePieceAnimations(changes, afterPosition);
 	}
 
 	clear(): void {
-		this.lastMoveControlType = 'api';
-		this.fen = FEN_EMPTY;
 		this.orientation = WHITE;
 		this.pieceOffsetWidth = 0;
 		this.pieceOffsetHeight = 0;
@@ -422,25 +526,14 @@ export class JuicerBoard extends LitElement {
 		this.highlightedSquares = [];
 		this.lastPos = { x: 0, y: 0 };
 		this.ghost = null;
-		const updater = () => {
-			this.position = new Map();
-		};
-		if (document.startViewTransition && this.lastMoveControlType === 'api') {
-			this.vt = document.startViewTransition(updater);
-		} else {
-			updater();
-		}
-	}
-
-	private updateAdoptedStylesheet(): void {
-		const sheet = new CSSStyleSheet();
-		const rules = this.positionCopy.values().reduce((acc, pd) => {
-			const rule = `juicer-board::part(piece-${pd.id}) { view-transition-name: piece-${pd.id}; }`;
-			acc += rule + '\n';
-			return acc;
-		}, '');
-		sheet.replaceSync(rules);
-		document.adoptedStyleSheets = [sheet];
+		const beforePosition = new Map(this.position);
+		const tmpAfterPosition = fenToPosition(FEN_EMPTY);
+		const [changes, afterPosition] = this.getPositionChangesWithMovedPieceIds(
+			beforePosition,
+			tmpAfterPosition,
+			this.orientation
+		);
+		this.enqueuePieceAnimations(changes, afterPosition);
 	}
 
 	protected override firstUpdated(): void {
@@ -460,14 +553,21 @@ export class JuicerBoard extends LitElement {
 		if (changedProperties.has('pieceTheme')) {
 			this.setPieceTheme();
 		}
-		if (changedProperties.has('positionCopy')) {
-			this.updateAdoptedStylesheet();
-		}
 		if (changedProperties.has('minSize')) {
 			this.style.setProperty('--min-size', `${this.minSize}px`);
 		}
 		if (changedProperties.has('maxSize')) {
 			this.style.setProperty('--max-size', `${this.maxSize}px`);
+		}
+		if (changedProperties.has('animationsFinished')) {
+			if (this.animationsFinished === 0) {
+				return;
+			}
+			if (this.animationsFinished === this.animationsQueued) {
+				this.animationsQueued = 0;
+				this.animationsFinished = 0;
+				this.removeClonesPosition = new Map();
+			}
 		}
 	}
 
@@ -533,6 +633,25 @@ export class JuicerBoard extends LitElement {
 									?ghost="${true}"
 									orientation="${this.orientation}"
 								></juicer-piece>
+							</div>
+						`
+					: nothing}
+				${this.removeClonesPosition.size > 0
+					? html`
+							<div class="remove-clones">
+								${repeat(
+									this.removeClonesPosition,
+									m => m[1].id,
+									([coord, pd]) => html`
+										<juicer-piece
+											exportparts="piece-${pd.id}"
+											piece-id="${pd.id}"
+											piece="${pd.piece}"
+											coord="${coord}"
+											orientation="${this.orientation}"
+										></juicer-piece>
+									`
+								)}
 							</div>
 						`
 					: nothing}

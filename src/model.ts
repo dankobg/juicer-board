@@ -182,6 +182,10 @@ export function translateElement(element: HTMLElement, deltaX: number, deltaY: n
 	element.style.setProperty('transform', `translate(${deltaX}px, ${deltaY}px)`);
 }
 
+export function hideElement(element: HTMLElement): void {
+	element.style.setProperty('display', 'none');
+}
+
 export function assertUnreachable(value: never): never {
 	throw new Error(`Unexpected value: ${value}`);
 }
@@ -244,4 +248,8 @@ export function getPositionChanges(beforePosition: Position, afterPosition: Posi
 		changes.push({ op: 'remove', coord, pieceData });
 	}
 	return changes;
+}
+
+export function genId(): string {
+	return crypto.randomUUID();
 }
