@@ -8,7 +8,7 @@ export class JuicerResizer extends LitElement {
 
 	@property({ type: Object }) target!: HTMLElement;
 	@property({ type: Boolean }) disabled: boolean = false;
-	@property({ type: Number, attribute: 'min-size' }) minSize: number = 240;
+	@property({ type: Number, attribute: 'min-size' }) minSize: number = 0;
 	@property({ type: Number, attribute: 'max-size' }) maxSize?: number;
 	@state() resizing: boolean = false;
 	@state() startWidth: number = 0;
@@ -58,7 +58,7 @@ export class JuicerResizer extends LitElement {
 		const diffY = clientY - this.startY;
 		let newSize = Math.max(this.startWidth + diffX, this.startHeight + diffY, this.minSize);
 		if (this.maxSize) {
-			newSize = Math.min(Math.max(newSize), this.maxSize - this.clientWidth);
+			newSize = Math.min(Math.max(newSize), this.maxSize);
 		}
 		this.target.style.setProperty('width', `${newSize}px`);
 		this.target.style.setProperty('height', `${newSize}px`);

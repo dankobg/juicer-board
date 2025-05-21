@@ -90,7 +90,7 @@ export class JuicerBoard extends LitElement {
 
 	@property() fen: string = FEN_EMPTY;
 	@property() orientation: Color = WHITE;
-	@property({ type: Number, attribute: 'min-size' }) minSize: number = 240;
+	@property({ type: Number, attribute: 'min-size' }) minSize: number = 0;
 	@property({ type: Number, attribute: 'max-size' }) maxSize?: number;
 	@property({ type: Boolean }) interactive: boolean = false;
 	@property({ type: Boolean, attribute: 'show-ghost' }) showGhost: boolean = false;
@@ -100,6 +100,7 @@ export class JuicerBoard extends LitElement {
 	@property({ attribute: 'ranks-position' }) ranksPosition: CoordsRanksPosition;
 	@property({ attribute: 'files-position' }) filesPosition: CoordsFilesPosition;
 	@property({ attribute: 'show-resizer', type: Boolean }) showResizer: boolean = false;
+	@property({ type: Object }) resizeTarget: HTMLElement | null = null;
 	@property({ type: Number, attribute: 'anim-snapback-dur' }) animationSnapbackDuration: number = 0;
 	@property({ type: Number, attribute: 'anim-snap-dur' }) animationSnapDuration: number = 0;
 	@property({ type: Number, attribute: 'anim-dur' }) animationDuration: number = 300;
@@ -603,7 +604,7 @@ export class JuicerBoard extends LitElement {
 				${this.showResizer
 					? html`
 							<juicer-resizer
-								.target="${this as any}"
+								.target="${(this.resizeTarget || this) as any}"
 								min-size="${this.minSize}"
 								max-size="${ifDefined(this.maxSize)}"
 							></juicer-resizer>

@@ -11,9 +11,9 @@
 	align-self: end;
 	justify-self: end;
 	position: absolute;
-	right: -1rem;
-	bottom: -1rem;
-	z-index: 2;
+	right: 0;
+	bottom: 0;
+	z-index: 69;
 }
 
 :host([disabled='true']) {
@@ -23,17 +23,23 @@
 .resizer {
 	width: 100%;
 	height: 100%;
-
-	:hover {
-		cursor: nw-resize;
-	}
+	cursor: nw-resize;
 
 	svg {
 		width: 100%;
 		height: 100%;
+		transition: all 0.1s;
+		transform-origin: bottom right;
 
 		path {
-			fill: goldenrod;
+			fill: oklch(0.85 0.35 145);
+		}
+
+		&:hover {
+			scale: 1.3;
+			border-radius: 4px;
+			padding: 2px;
+			background-color: oklch(0.58 0.32 145);
 		}
 	}
 }

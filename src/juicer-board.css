@@ -5,13 +5,13 @@
 }
 
 :host {
-	display: inline-block;
+	display: block;
 	position: relative;
 	min-width: var(--min-size);
 	min-height: var(--min-size);
 	max-width: var(--max-size);
 	max-height: var(--max-size);
-	width: min(100%, min(70rem, calc(100vh - 1.5rem)));
+	width: 100%;
 	aspect-ratio: 1;
 }
 

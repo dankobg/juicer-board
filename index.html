@@ -7,11 +7,38 @@
 		<title>Juicer board</title>
 		<link rel="stylesheet" href="./index.css" />
 		<script type="module" src="/src/juicer-board.ts"></script>
-		<script type="module" src="./index.ts"></script>
+		<script type="module">
+			const resizeEl = document.querySelector('.inner');
+			const jb = document.querySelector('juicer-board');
+			jb.resizeTarget = resizeEl;
+		</script>
 	</head>
 
 	<body>
-		<article style="display: flex; gap: 2rem; align-items: start">
+		<main>
+			<section class="layout">
+				<div class="wrapper">
+					<div class="panel l">left</div>
+					<div class="inner">
+						<juicer-board
+							interactive="true"
+							fen="start"
+							coords-placement="inside"
+							ranks-position="left"
+							files-position="bottom"
+							show-ghost="true"
+							show-resizer="true"
+							min-size="200"
+						></juicer-board>
+					</div>
+					<div class="panel r">right</div>
+				</div>
+			</section>
+		</main>
+	</body>
+
+	<!-- <body>
+		<article style="display: flex; gap: 2rem; align-items: start; height: 99vh">
 			<juicer-board
 				interactive="true"
 				fen="start"
@@ -132,5 +159,5 @@
 				</div>
 			</section>
 		</article>
-	</body>
+	</body> -->
 </html>
