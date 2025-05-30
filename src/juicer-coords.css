@@ -10,6 +10,8 @@
 	--light-text: #f6f6f6;
 
 	display: block;
+	container-type: inline-size;
+	container-name: coords-container;
 }
 
 .ranks {
@@ -25,6 +27,10 @@
 	margin-inline-start: 2px;
 	margin-block-end: -2px;
 	user-select: none;
+
+	@container coords-container (width <= 20rem) {
+		font-size: 5cqi;
+	}
 }
 .ranks[data-orientation='b'] {
 	flex-direction: column;
@@ -65,6 +71,10 @@
 	margin-inline-start: -2px;
 	margin-block-end: 2px;
 	user-select: none;
+
+	@container coords-container (width <= 20rem) {
+		font-size: 5cqi;
+	}
 }
 .files[data-orientation='b'] {
 	flex-direction: row-reverse;
