@@ -29,6 +29,7 @@
 	grid-template-columns: repeat(var(--cols), 1fr);
 	grid-template-rows: repeat(var(--rows), 1fr);
 	background-image: var(--board-theme);
+	background-repeat: no-repeat;
 	background-size: cover;
 	position: relative;
 	user-select: none;
