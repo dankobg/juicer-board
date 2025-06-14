@@ -30,6 +30,7 @@
 }
 .piece[data-dragging='true'] {
 	z-index: 65;
+	cursor: grab;
 }
 .piece[data-ghost='true'] {
 	z-index: 59;
