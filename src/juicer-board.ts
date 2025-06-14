@@ -190,12 +190,11 @@ export class JuicerBoard extends LitElement {
 		this.dragging = false;
 		this.draggedElm = null;
 		this.ghost = null;
-
 		if (coord === null || coord === this.srcSquare) {
 			const src = this.srcSquare!;
 			const dest = coord;
 			const piece = this.getPiece(src)!;
-			this.performSnapback(pieceElement, src, dest, pieceElement, piece);
+			this.performSnapback(pieceElement, src, dest, pieceElement, piece, coord === null);
 		} else {
 			this.performSnapToSquare(pieceElement, coord!, clientX, clientY, this);
 		}
@@ -246,13 +245,20 @@ export class JuicerBoard extends LitElement {
 		src: Coord,
 		dest: Coord | null,
 		pieceElement: HTMLElement,
-		pieceData: PieceData
+		pieceData: PieceData,
+		outOufBound?: boolean
 	): void {
 		translateElement(elm, this.lastPos.x, this.lastPos.y);
 		elm.style.removeProperty('transform'); // tmp fix not sure if this is ideal, i need to get rid of the transform so the one with css variable gets used
 		this.srcSquare = null;
 		this.lastPos = { x: 0, y: 0 };
-		const moveCancelEvent = new MoveCancelEvent({ src, dest, pieceElement, pieceData });
+		const moveCancelEvent = new MoveCancelEvent({
+			src,
+			dest,
+			pieceElement,
+			pieceData,
+			reason: outOufBound ? 'out-of-bound' : 'same-square',
+		});
 		this.dispatchEvent(moveCancelEvent);
 	}
 
@@ -714,6 +720,7 @@ export class MoveCancelEvent extends Event {
 		dest: Coord | null;
 		pieceElement: HTMLElement;
 		pieceData: PieceData;
+		reason: 'same-square' | 'out-of-bound';
 	};
 	constructor(data: MoveCancelEvent['data']) {
 		super(MoveCancelEvent.eventType, { bubbles: true, composed: true, cancelable: false });
