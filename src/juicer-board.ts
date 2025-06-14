@@ -100,6 +100,7 @@ export class JuicerBoard extends LitElement {
 	@property({ attribute: 'ranks-position' }) ranksPosition: CoordsRanksPosition;
 	@property({ attribute: 'files-position' }) filesPosition: CoordsFilesPosition;
 	@property({ attribute: 'show-resizer', type: Boolean }) showResizer: boolean = false;
+	@property({ attribute: 'check-square' }) checkSquare?: Coord;
 	@property({ type: Object }) resizeTarget: HTMLElement | null = null;
 	@property({ type: Number, attribute: 'anim-snapback-dur' }) animationSnapbackDuration: number = 0;
 	@property({ type: Number, attribute: 'anim-snap-dur' }) animationSnapDuration: number = 0;
@@ -620,7 +621,8 @@ export class JuicerBoard extends LitElement {
 				<div class="squares">
 					${map(
 						this.coords,
-						coord => html`<juicer-square coord="${coord}" orientation="${this.orientation}"></juicer-square>`
+						coord =>
+							html`<juicer-square coord="${coord}" orientation="${this.orientation}" ?checked="${ifDefined(this.checkSquare === coord || undefined)}"</juicer-square>`
 					)}
 				</div>
 
@@ -638,6 +640,7 @@ export class JuicerBoard extends LitElement {
 											coord="${coord}"
 											?interactive="${this.interactive}"
 											?dragging="${this.draggedElm?.dataset?.['id'] === pd.id}"
+											?checked="${ifDefined(this.checkSquare === coord || undefined)}"
 											orientation="${this.orientation}"
 											@piece:pointerdown="${this.onPiecePointerDown}"
 											@piece:pointerup="${this.onPiecePointerUp}"

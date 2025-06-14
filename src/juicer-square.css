@@ -30,3 +30,7 @@
 .square[data-bordered='true'] {
 	border: 3px solid rgb(201, 126, 77);
 }
+
+/* .square[data-checked='true'] { */
+/* border: 3px solid red; */
+/* } */

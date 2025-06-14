@@ -32,6 +32,9 @@
 	z-index: 65;
 	cursor: grab;
 }
+.piece[data-checked='true'] {
+	filter: drop-shadow(0 0 8px red);
+}
 .piece[data-ghost='true'] {
 	z-index: 59;
 	opacity: 0.35;
