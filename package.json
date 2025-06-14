@@ -1,6 +1,6 @@
 {
 	"name": "@dankop/juicer-board",
-	"version": "1.6.7",
+	"version": "1.6.8",
 	"private": false,
 	"type": "module",
 	"description": "Juicer chess board web component",
