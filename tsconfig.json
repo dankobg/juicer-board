@@ -1,6 +1,7 @@
 {
 	"compilerOptions": {
 		"target": "ESNext",
+		"types": ["node"],
 		"experimentalDecorators": true,
 		"useDefineForClassFields": false,
 		"module": "ESNext",
