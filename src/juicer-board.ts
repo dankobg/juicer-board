@@ -622,7 +622,11 @@ export class JuicerBoard extends LitElement {
 					${map(
 						this.coords,
 						coord =>
-							html`<juicer-square coord="${coord}" orientation="${this.orientation}" ?checked="${ifDefined(this.checkSquare === coord || undefined)}"</juicer-square>`
+							html`<juicer-square
+								coord="${coord}"
+								orientation="${this.orientation}"
+								?checked="${this.checkSquare === coord}"
+							></juicer-square>`
 					)}
 				</div>
 
@@ -640,7 +644,7 @@ export class JuicerBoard extends LitElement {
 											coord="${coord}"
 											?interactive="${this.interactive}"
 											?dragging="${this.draggedElm?.dataset?.['id'] === pd.id}"
-											?checked="${ifDefined(this.checkSquare === coord || undefined)}"
+											?checked="${this.checkSquare === coord}"
 											orientation="${this.orientation}"
 											@piece:pointerdown="${this.onPiecePointerDown}"
 											@piece:pointerup="${this.onPiecePointerUp}"

@@ -27,8 +27,6 @@ export type Change =
 	| { op: 'remove'; coord: Coord; pieceData: PieceData }
 	| { op: 'move'; src: Coord; dest: Coord; pieceData: PieceData };
 
-// --------------------------------------------------------------------------------
-
 export const ROWS = 8;
 export const COLS = 8;
 export const TOTAL_SQUARES = 64;
@@ -109,6 +107,7 @@ export function positionToFen(position: Position): string {
 	}
 	return fen;
 }
+
 export function indexFromCoord(coord: Coord | null, orientation: Color): number {
 	if (coord === null) {
 		return SQUARE_NONE;
