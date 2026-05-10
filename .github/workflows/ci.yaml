@@ -15,7 +15,7 @@ jobs:
         platform:
           - ubuntu-latest
         node-version:
-          - 22.x
+          - 26.x
 
     runs-on: ${{ matrix.platform }}
 
