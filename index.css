@@ -4,10 +4,6 @@
 	box-sizing: border-box;
 }
 
-body {
-	margin: 0;
-}
-
 :root {
 	--board-theme: url('https://raw.githubusercontent.com/lichess-org/lila/89614657e9cfd285968aa502f6479c0620a5ac1b/public/images/board/svg/brown.svg');
 	--wr-theme: url('https://raw.githubusercontent.com/lichess-org/lila/89614657e9cfd285968aa502f6479c0620a5ac1b/public/piece/gioco/wR.svg');
@@ -24,44 +20,31 @@ body {
 	--bp-theme: url('https://raw.githubusercontent.com/lichess-org/lila/89614657e9cfd285968aa502f6479c0620a5ac1b/public/piece/gioco/bP.svg');
 }
 
+body {
+	--board-scale: 100;
+	--nav-height: 50px;
+	margin: 0;
+}
+
+nav {
+	height: var(--nav-height);
+	background-color: firebrick;
+}
+
 .layout {
-	width: 100%;
-	height: 99dvh;
-	display: flex;
-	flex-direction: column;
-	justify-content: center;
-	align-items: center;
-}
-
-.wrapper {
-	container-name: wrapper-container;
 	container-type: size;
-	height: 100%;
-	width: 100%;
-	display: flex;
+	container-name: board-layout;
+	width: 100dvw;
+	height: calc(100dvh - var(--nav-height));
+	display: grid;
+	grid-template-columns: minmax(0, 300px) auto minmax(0, 300px);
 	justify-content: center;
-	align-items: center;
-	gap: 1rem;
 }
 
-.inner {
-	aspect-ratio: 1;
-	width: 100%;
-	display: grid;
-	place-items: center;
-
-	@container wrapper-container (aspect-ratio > 1) {
-		width: auto;
-		height: 100%;
-	}
+juicer-board {
+	width: calc((min(100cqh, calc(100cqw - 300px - 300px))) * (var(--board-scale) / 100));
 }
 
 .panel {
-	flex: 1;
-	max-width: 20rem;
-	height: 100%;
-	max-height: 30rem;
-	display: grid;
-	place-items: center;
-	border: 3px dashed deepskyblue;
+	background-color: slateblue;
 }

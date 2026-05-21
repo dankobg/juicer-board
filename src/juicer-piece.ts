@@ -1,15 +1,6 @@
 import { LitElement, html, unsafeCSS } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
-import {
-	PieceFenSymbol,
-	Coord,
-	Color,
-	WHITE,
-	BLACK,
-	rowColFromCoord,
-	getSquareCoordFromPointer,
-	indexFromCoord,
-} from './model';
+import { type PieceFenSymbol, type Coord, type Color, WHITE, BLACK, rowColFromCoord, boolConverter } from './model';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import juicerPieceStyles from './juicer-piece.css?inline';
 
@@ -25,10 +16,10 @@ export class JuicerPiece extends LitElement {
 	@property() piece!: PieceFenSymbol;
 	@property() coord!: Coord;
 	@property() orientation: Color = WHITE;
-	@property({ type: Boolean }) interactive: boolean = false;
-	@property({ type: Boolean }) ghost: boolean = false;
-	@property({ type: Boolean }) checked: boolean = false;
-	@property({ type: Boolean }) dragging: boolean = false;
+	@property({ converter: boolConverter }) interactive: boolean = false;
+	@property({ converter: boolConverter }) ghost: boolean = false;
+	@property({ converter: boolConverter }) checked: boolean = false;
+	@property({ converter: boolConverter }) dragging: boolean = false;
 	@property() get color(): Color {
 		return this.piece === this.piece.toUpperCase() ? WHITE : BLACK;
 	}
@@ -41,16 +32,12 @@ export class JuicerPiece extends LitElement {
 		const pieceElement = target as HTMLDivElement;
 		const pieceRect = pieceElement.getBoundingClientRect();
 		const pieceId = pieceElement.dataset['id']!;
-		const coord = getSquareCoordFromPointer(event, this.orientation);
-		const index = indexFromCoord(coord, this.orientation);
 		pieceElement.setPointerCapture(event.pointerId);
 		pieceElement.style.setProperty('user-select', 'none');
 		const piecePointerDownEvent = new PiecePointerDownEvent({
 			pieceElement,
 			pieceId,
 			pieceRect,
-			coord,
-			index,
 			clientX,
 			clientY,
 			offsetX,
@@ -66,15 +53,11 @@ export class JuicerPiece extends LitElement {
 		const { target, clientX, clientY, offsetX, offsetY } = event;
 		const pieceElement = target as HTMLDivElement;
 		const pieceId = pieceElement.dataset['id']!;
-		const coord = getSquareCoordFromPointer(event, this.orientation);
-		const index = indexFromCoord(coord, this.orientation);
 		pieceElement.releasePointerCapture(event.pointerId);
 		pieceElement.style.setProperty('user-select', 'auto');
 		const piecePointerUpEvent = new PiecePointerUpEvent({
 			pieceElement,
 			pieceId,
-			coord,
-			index,
 			clientX,
 			clientY,
 			offsetX,
@@ -91,13 +74,9 @@ export class JuicerPiece extends LitElement {
 		const { target, clientX, clientY, offsetX, offsetY } = event;
 		const pieceElement = target as HTMLDivElement;
 		const pieceId = pieceElement.dataset['id']!;
-		const coord = getSquareCoordFromPointer(event, this.orientation);
-		const index = indexFromCoord(coord, this.orientation);
 		const piecePointerMoveEvent = new PiecePointerMoveEvent({
 			pieceElement,
 			pieceId,
-			coord,
-			index,
 			clientX,
 			clientY,
 			offsetX,
@@ -154,8 +133,6 @@ export class PiecePointerDownEvent extends Event {
 		pieceElement: HTMLDivElement;
 		pieceId: string;
 		pieceRect: DOMRect;
-		coord: Coord | null;
-		index: number;
 		clientX: number;
 		clientY: number;
 		offsetX: number;
@@ -172,8 +149,6 @@ export class PiecePointerUpEvent extends Event {
 	data: {
 		pieceElement: HTMLDivElement;
 		pieceId: string;
-		coord: Coord | null;
-		index: number;
 		clientX: number;
 		clientY: number;
 		offsetX: number;
@@ -190,8 +165,6 @@ export class PiecePointerMoveEvent extends Event {
 	data: {
 		pieceElement: HTMLDivElement;
 		pieceId: string;
-		coord: Coord | null;
-		index: number;
 		clientX: number;
 		clientY: number;
 		offsetX: number;

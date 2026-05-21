@@ -7,10 +7,8 @@
 :host {
 	display: block;
 	position: relative;
-	min-width: var(--min-size);
-	min-height: var(--min-size);
-	max-width: var(--max-size);
-	max-height: var(--max-size);
+	min-width: var(--board-min-size, 10rem);
+	min-height: var(--board-min-size, 10rem);
 	width: 100%;
 	aspect-ratio: 1;
 }

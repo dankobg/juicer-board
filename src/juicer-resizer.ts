@@ -6,22 +6,22 @@ import juicerResizerStyles from './juicer-resizer.css?inline';
 export class JuicerResizer extends LitElement {
 	static override styles = unsafeCSS(juicerResizerStyles);
 
-	@property({ type: Object }) target!: HTMLElement;
+	@property({ type: Object }) resizable!: HTMLElement;
 	@property({ type: Boolean }) disabled: boolean = false;
-	@property({ type: Number, attribute: 'min-size' }) minSize: number = 0;
-	@property({ type: Number, attribute: 'max-size' }) maxSize?: number;
+	@property({ type: Number }) scale: number = 100;
+	@property({ attribute: 'scale-factor', type: Number }) scaleFactor: number = 0.2;
 	@state() resizing: boolean = false;
-	@state() startWidth: number = 0;
-	@state() startHeight: number = 0;
 	@state() startX: number = 0;
 	@state() startY: number = 0;
+	@state() startScale: number = 0;
+
 	@query('.resizer') resizerElm!: HTMLElement;
 
-	private startResize(event: PointerEvent) {
-		if (this.disabled) {
+	private startResize = (event: PointerEvent) => {
+		if (this.disabled || !this.resizable) {
 			return;
 		}
-		if (!this.target) {
+		if (!this.resizable) {
 			console.log('no target (resizable element) provided');
 			return;
 		}
@@ -30,12 +30,10 @@ export class JuicerResizer extends LitElement {
 		(target as HTMLElement).setPointerCapture(event.pointerId);
 		this.startX = clientX;
 		this.startY = clientY;
-		const computed = getComputedStyle(this.target);
-		this.startWidth = Number.parseFloat(computed.width);
-		this.startHeight = Number.parseFloat(computed.height);
+		this.startScale = this.scale;
 		this.addEventListener('pointermove', this.resize.bind(this));
 		this.addEventListener('pointerup', this.stopResize.bind(this));
-	}
+	};
 
 	private stopResize(event: PointerEvent) {
 		const { target } = event;
@@ -45,24 +43,17 @@ export class JuicerResizer extends LitElement {
 		this.removeEventListener('pointerup', this.stopResize.bind(this));
 	}
 
-	private resize(event: PointerEvent) {
+	private resize = (event: PointerEvent) => {
 		if (this.disabled || !this.resizing) {
 			return;
 		}
-		if (!this.target) {
-			console.log('no resizableElm provided');
-			return;
-		}
-		const { clientX, clientY } = event;
+		const { clientX } = event;
 		const diffX = clientX - this.startX;
-		const diffY = clientY - this.startY;
-		let newSize = Math.max(this.startWidth + diffX, this.startHeight + diffY, this.minSize);
-		if (this.maxSize) {
-			newSize = Math.min(Math.max(newSize), this.maxSize);
-		}
-		this.target.style.setProperty('width', `${newSize}px`);
-		this.target.style.setProperty('height', `${newSize}px`);
-	}
+		const newScale = this.startScale + diffX * this.scaleFactor;
+		const newScaleClamped = Math.max(10, Math.min(100, newScale));
+		this.scale = newScaleClamped;
+		this.dispatchEvent(new ResizerScaleChangeEvent({ scale: newScaleClamped }));
+	};
 
 	protected override render() {
 		return html`
@@ -74,6 +65,15 @@ export class JuicerResizer extends LitElement {
 				</svg>
 			</div>
 		`;
+	}
+}
+
+export class ResizerScaleChangeEvent extends Event {
+	static eventType = 'resizer:scale-changed';
+	data: { scale: number };
+	constructor(data: ResizerScaleChangeEvent['data']) {
+		super(ResizerScaleChangeEvent.eventType, { bubbles: true, composed: true, cancelable: false });
+		this.data = data;
 	}
 }
 

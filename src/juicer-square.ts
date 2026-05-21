@@ -1,14 +1,15 @@
 import { LitElement, html, unsafeCSS } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import {
-	Color,
-	Coord,
+	type Color,
+	type Coord,
+	type RankFile,
+	type RowCol,
 	indexFromCoord,
 	getSquareColor,
-	RankFile,
 	rankFileFromCoord,
-	RowCol,
 	rowColFromCoord,
+	boolConverter,
 } from './model';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import juicerSquareStyles from './juicer-square.css?inline';
@@ -19,10 +20,10 @@ export class JuicerSquare extends LitElement {
 
 	@property({ reflect: true }) coord!: Coord;
 	@property() orientation!: Color;
-	@property({ type: Boolean }) checked: boolean = false;
-	@property({ type: Boolean }) selected: boolean = false;
-	@property({ type: Boolean }) bordered: boolean = false;
-	@property({ type: Boolean }) highlighted: boolean = false;
+	@property({ converter: boolConverter }) checked: boolean = false;
+	@property({ converter: boolConverter }) selected: boolean = false;
+	@property({ converter: boolConverter }) bordered: boolean = false;
+	@property({ converter: boolConverter }) highlighted: boolean = false;
 	@property({ type: Number }) get index(): number {
 		return indexFromCoord(this.coord, this.orientation);
 	}

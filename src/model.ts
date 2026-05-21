@@ -1,9 +1,11 @@
+import type { ComplexAttributeConverter } from 'lit';
+
 export type Color = 'w' | 'b';
 
 export type Row = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7;
 export type Col = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7;
 
-export type Rank = '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8';
+export type Rank = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
 export type File = 'a' | 'b' | 'c' | 'd' | 'e' | 'f' | 'g' | 'h';
 export type Coord = `${File}${Rank}`;
 
@@ -38,7 +40,7 @@ export const FEN_START = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0
 export const WHITE = 'w';
 export const BLACK = 'b';
 
-export const RANKS = ['1', '2', '3', '4', '5', '6', '7', '8'] as const;
+export const RANKS = [1, 2, 3, 4, 5, 6, 7, 8] as const;
 export const FILES = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'] as const;
 
 export const WHITE_PIECE_SYMBOLS: readonly Uppercase<PieceFenSymbol>[] = ['K', 'Q', 'R', 'B', 'N', 'P'];
@@ -138,7 +140,7 @@ export function coordFromRankFile(rank: Rank, file: File): Coord {
 }
 
 export function rankFileFromCoord(coord: Coord): RankFile {
-	return [coord[1] as Rank, coord[0] as File];
+	return [Number(coord[1]) as Rank, coord[0] as File];
 }
 
 export function rowColFromCoord(coord: Coord, orientation: Color): RowCol {
@@ -162,19 +164,19 @@ export function getSquareColor(coord: Coord, orientation: Color): Color {
 	return (row + col) % 2 === 0 ? WHITE : BLACK;
 }
 
-export function getSquareCoordFromPointer(event: PointerEvent, orientation: Color): Coord | null {
-	const elm = event.target as HTMLElement;
-	const boardElement = elm.offsetParent as HTMLElement;
-	const squareWidth = elm.clientWidth;
-	const squareHeight = elm.clientHeight;
-	const deltaX = event.clientX - boardElement.offsetLeft;
-	const deltaY = event.clientY - boardElement.offsetTop;
-	const col = Math.floor(deltaX / squareWidth);
-	const row = Math.floor(deltaY / squareHeight);
+export function getSquareCoordFromPoint(
+	x: number,
+	y: number,
+	boardWidth: number,
+	boardHeight: number,
+	orientation: Color
+): Coord | null {
+	const col = Math.floor(x / (boardWidth / COLS)) as Col;
+	const row = Math.floor(y / (boardHeight / ROWS)) as Row;
 	if (row < 0 || row > ROWS - 1 || col < 0 || col > COLS - 1) {
 		return null;
 	}
-	return coordFromRowCol(row as Row, col as Col, orientation);
+	return coordFromRowCol(row, col, orientation);
 }
 
 export function translateElement(element: HTMLElement, deltaX: number, deltaY: number): void {
@@ -252,3 +254,12 @@ export function getPositionChanges(beforePosition: Position, afterPosition: Posi
 export function genId(): string {
 	return crypto.randomUUID();
 }
+
+export const boolConverter: ComplexAttributeConverter<boolean> = {
+	toAttribute(value: boolean) {
+		return value ? 'true' : 'false';
+	},
+	fromAttribute(value: string | null) {
+		return value === 'false' ? false : value !== null;
+	},
+};

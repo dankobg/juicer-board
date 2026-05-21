@@ -1,7 +1,7 @@
 {
 	"compilerOptions": {
 		"target": "ESNext",
-		"types": ["node"],
+		"types": ["vite/client"],
 		"experimentalDecorators": true,
 		"useDefineForClassFields": false,
 		"module": "ESNext",
@@ -13,12 +13,15 @@
 		"isolatedModules": true,
 		"noEmit": true,
 		"strict": true,
+		"verbatimModuleSyntax": true,
 		"noUnusedLocals": true,
 		"noUnusedParameters": true,
 		"noFallthroughCasesInSwitch": true,
 		"noImplicitOverride": true,
 		"noPropertyAccessFromIndexSignature": true,
-		"noUncheckedIndexedAccess": true
+		"noUncheckedIndexedAccess": true,
+		"moduleDetection": "force",
+		"erasableSyntaxOnly": true
 	},
 	"include": ["src"]
 }

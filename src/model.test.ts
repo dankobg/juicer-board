@@ -1,119 +1,119 @@
-import { test } from 'node:test';
-import assert from 'node:assert';
+import { describe, test, expect, assert } from 'vitest';
 import {
-	Change,
-	Color,
-	Coord,
-	coordFromRankFile,
-	coordFromRowCol,
+	type Change,
+	type Color,
+	type Coord,
+	type NumPair,
+	type Position,
+	type RankFile,
+	type RowCol,
 	COORDS,
 	COORDS_REVERSED,
 	FEN_EMPTY,
 	FEN_START,
+	coordFromRankFile,
+	coordFromRowCol,
 	fenToPosition,
 	getDeltaXYFromCoord,
 	getDistance,
 	getDistanceDelta,
 	getPositionChanges,
 	getSquareColor,
-	getSquareCoordFromPointer,
+	getSquareCoordFromPoint,
 	indexFromCoord,
-	NumPair,
-	Position,
 	positionToFen,
-	RankFile,
 	rankFileFromCoord,
 	rankFileFromRowCol,
-	RowCol,
 	rowColFromCoord,
 	rowColFromRankFile,
 } from './model';
 
-test('indexFromCoord', async t => {
+describe('indexFromCoord', () => {
 	for (const [index, coord] of COORDS.entries()) {
-		await t.test(`indexFromCoord from white side ${coord}: `, () => {
+		test(`indexFromCoord from white side ${coord}`, () => {
 			const result = indexFromCoord(coord, 'w');
-			assert.strictEqual(result, index);
+			expect(result).toBe(index);
 		});
 	}
+
 	for (const [index, coord] of COORDS_REVERSED.entries()) {
-		await t.test(`indexFromCoord from black side ${coord}: `, () => {
+		test(`indexFromCoord from black side ${coord}`, () => {
 			const result = indexFromCoord(coord, 'b');
-			assert.strictEqual(result, index);
+			expect(result).toBe(index);
 		});
 	}
 });
 
-test('rankFileFromRowCol', async t => {
+describe('rankFileFromRowCol', () => {
 	const testCases: { rowCol: RowCol; expectedWhite: RankFile; expectedBlack: RankFile }[] = [
-		{ rowCol: [0, 0], expectedWhite: ['8', 'a'], expectedBlack: ['1', 'h'] },
-		{ rowCol: [0, 1], expectedWhite: ['8', 'b'], expectedBlack: ['1', 'g'] },
-		{ rowCol: [0, 2], expectedWhite: ['8', 'c'], expectedBlack: ['1', 'f'] },
-		{ rowCol: [0, 3], expectedWhite: ['8', 'd'], expectedBlack: ['1', 'e'] },
-		{ rowCol: [0, 4], expectedWhite: ['8', 'e'], expectedBlack: ['1', 'd'] },
-		{ rowCol: [0, 5], expectedWhite: ['8', 'f'], expectedBlack: ['1', 'c'] },
-		{ rowCol: [0, 6], expectedWhite: ['8', 'g'], expectedBlack: ['1', 'b'] },
-		{ rowCol: [0, 7], expectedWhite: ['8', 'h'], expectedBlack: ['1', 'a'] },
-		{ rowCol: [1, 0], expectedWhite: ['7', 'a'], expectedBlack: ['2', 'h'] },
-		{ rowCol: [1, 1], expectedWhite: ['7', 'b'], expectedBlack: ['2', 'g'] },
-		{ rowCol: [1, 2], expectedWhite: ['7', 'c'], expectedBlack: ['2', 'f'] },
-		{ rowCol: [1, 3], expectedWhite: ['7', 'd'], expectedBlack: ['2', 'e'] },
-		{ rowCol: [1, 4], expectedWhite: ['7', 'e'], expectedBlack: ['2', 'd'] },
-		{ rowCol: [1, 5], expectedWhite: ['7', 'f'], expectedBlack: ['2', 'c'] },
-		{ rowCol: [1, 6], expectedWhite: ['7', 'g'], expectedBlack: ['2', 'b'] },
-		{ rowCol: [1, 7], expectedWhite: ['7', 'h'], expectedBlack: ['2', 'a'] },
-		{ rowCol: [2, 0], expectedWhite: ['6', 'a'], expectedBlack: ['3', 'h'] },
-		{ rowCol: [2, 1], expectedWhite: ['6', 'b'], expectedBlack: ['3', 'g'] },
-		{ rowCol: [2, 2], expectedWhite: ['6', 'c'], expectedBlack: ['3', 'f'] },
-		{ rowCol: [2, 3], expectedWhite: ['6', 'd'], expectedBlack: ['3', 'e'] },
-		{ rowCol: [2, 4], expectedWhite: ['6', 'e'], expectedBlack: ['3', 'd'] },
-		{ rowCol: [2, 5], expectedWhite: ['6', 'f'], expectedBlack: ['3', 'c'] },
-		{ rowCol: [2, 6], expectedWhite: ['6', 'g'], expectedBlack: ['3', 'b'] },
-		{ rowCol: [2, 7], expectedWhite: ['6', 'h'], expectedBlack: ['3', 'a'] },
-		{ rowCol: [3, 0], expectedWhite: ['5', 'a'], expectedBlack: ['4', 'h'] },
-		{ rowCol: [3, 1], expectedWhite: ['5', 'b'], expectedBlack: ['4', 'g'] },
-		{ rowCol: [3, 2], expectedWhite: ['5', 'c'], expectedBlack: ['4', 'f'] },
-		{ rowCol: [3, 3], expectedWhite: ['5', 'd'], expectedBlack: ['4', 'e'] },
-		{ rowCol: [3, 4], expectedWhite: ['5', 'e'], expectedBlack: ['4', 'd'] },
-		{ rowCol: [3, 5], expectedWhite: ['5', 'f'], expectedBlack: ['4', 'c'] },
-		{ rowCol: [3, 6], expectedWhite: ['5', 'g'], expectedBlack: ['4', 'b'] },
-		{ rowCol: [3, 7], expectedWhite: ['5', 'h'], expectedBlack: ['4', 'a'] },
-		{ rowCol: [4, 0], expectedWhite: ['4', 'a'], expectedBlack: ['5', 'h'] },
-		{ rowCol: [4, 1], expectedWhite: ['4', 'b'], expectedBlack: ['5', 'g'] },
-		{ rowCol: [4, 2], expectedWhite: ['4', 'c'], expectedBlack: ['5', 'f'] },
-		{ rowCol: [4, 3], expectedWhite: ['4', 'd'], expectedBlack: ['5', 'e'] },
-		{ rowCol: [4, 4], expectedWhite: ['4', 'e'], expectedBlack: ['5', 'd'] },
-		{ rowCol: [4, 5], expectedWhite: ['4', 'f'], expectedBlack: ['5', 'c'] },
-		{ rowCol: [4, 6], expectedWhite: ['4', 'g'], expectedBlack: ['5', 'b'] },
-		{ rowCol: [4, 7], expectedWhite: ['4', 'h'], expectedBlack: ['5', 'a'] },
-		{ rowCol: [5, 0], expectedWhite: ['3', 'a'], expectedBlack: ['6', 'h'] },
-		{ rowCol: [5, 1], expectedWhite: ['3', 'b'], expectedBlack: ['6', 'g'] },
-		{ rowCol: [5, 2], expectedWhite: ['3', 'c'], expectedBlack: ['6', 'f'] },
-		{ rowCol: [5, 3], expectedWhite: ['3', 'd'], expectedBlack: ['6', 'e'] },
-		{ rowCol: [5, 4], expectedWhite: ['3', 'e'], expectedBlack: ['6', 'd'] },
-		{ rowCol: [5, 5], expectedWhite: ['3', 'f'], expectedBlack: ['6', 'c'] },
-		{ rowCol: [5, 6], expectedWhite: ['3', 'g'], expectedBlack: ['6', 'b'] },
-		{ rowCol: [5, 7], expectedWhite: ['3', 'h'], expectedBlack: ['6', 'a'] },
-		{ rowCol: [6, 0], expectedWhite: ['2', 'a'], expectedBlack: ['7', 'h'] },
-		{ rowCol: [6, 1], expectedWhite: ['2', 'b'], expectedBlack: ['7', 'g'] },
-		{ rowCol: [6, 2], expectedWhite: ['2', 'c'], expectedBlack: ['7', 'f'] },
-		{ rowCol: [6, 3], expectedWhite: ['2', 'd'], expectedBlack: ['7', 'e'] },
-		{ rowCol: [6, 4], expectedWhite: ['2', 'e'], expectedBlack: ['7', 'd'] },
-		{ rowCol: [6, 5], expectedWhite: ['2', 'f'], expectedBlack: ['7', 'c'] },
-		{ rowCol: [6, 6], expectedWhite: ['2', 'g'], expectedBlack: ['7', 'b'] },
-		{ rowCol: [6, 7], expectedWhite: ['2', 'h'], expectedBlack: ['7', 'a'] },
-		{ rowCol: [7, 0], expectedWhite: ['1', 'a'], expectedBlack: ['8', 'h'] },
-		{ rowCol: [7, 1], expectedWhite: ['1', 'b'], expectedBlack: ['8', 'g'] },
-		{ rowCol: [7, 2], expectedWhite: ['1', 'c'], expectedBlack: ['8', 'f'] },
-		{ rowCol: [7, 3], expectedWhite: ['1', 'd'], expectedBlack: ['8', 'e'] },
-		{ rowCol: [7, 4], expectedWhite: ['1', 'e'], expectedBlack: ['8', 'd'] },
-		{ rowCol: [7, 5], expectedWhite: ['1', 'f'], expectedBlack: ['8', 'c'] },
-		{ rowCol: [7, 6], expectedWhite: ['1', 'g'], expectedBlack: ['8', 'b'] },
-		{ rowCol: [7, 7], expectedWhite: ['1', 'h'], expectedBlack: ['8', 'a'] },
+		{ rowCol: [0, 0], expectedWhite: [8, 'a'], expectedBlack: [1, 'h'] },
+		{ rowCol: [0, 1], expectedWhite: [8, 'b'], expectedBlack: [1, 'g'] },
+		{ rowCol: [0, 2], expectedWhite: [8, 'c'], expectedBlack: [1, 'f'] },
+		{ rowCol: [0, 3], expectedWhite: [8, 'd'], expectedBlack: [1, 'e'] },
+		{ rowCol: [0, 4], expectedWhite: [8, 'e'], expectedBlack: [1, 'd'] },
+		{ rowCol: [0, 5], expectedWhite: [8, 'f'], expectedBlack: [1, 'c'] },
+		{ rowCol: [0, 6], expectedWhite: [8, 'g'], expectedBlack: [1, 'b'] },
+		{ rowCol: [0, 7], expectedWhite: [8, 'h'], expectedBlack: [1, 'a'] },
+		{ rowCol: [1, 0], expectedWhite: [7, 'a'], expectedBlack: [2, 'h'] },
+		{ rowCol: [1, 1], expectedWhite: [7, 'b'], expectedBlack: [2, 'g'] },
+		{ rowCol: [1, 2], expectedWhite: [7, 'c'], expectedBlack: [2, 'f'] },
+		{ rowCol: [1, 3], expectedWhite: [7, 'd'], expectedBlack: [2, 'e'] },
+		{ rowCol: [1, 4], expectedWhite: [7, 'e'], expectedBlack: [2, 'd'] },
+		{ rowCol: [1, 5], expectedWhite: [7, 'f'], expectedBlack: [2, 'c'] },
+		{ rowCol: [1, 6], expectedWhite: [7, 'g'], expectedBlack: [2, 'b'] },
+		{ rowCol: [1, 7], expectedWhite: [7, 'h'], expectedBlack: [2, 'a'] },
+		{ rowCol: [2, 0], expectedWhite: [6, 'a'], expectedBlack: [3, 'h'] },
+		{ rowCol: [2, 1], expectedWhite: [6, 'b'], expectedBlack: [3, 'g'] },
+		{ rowCol: [2, 2], expectedWhite: [6, 'c'], expectedBlack: [3, 'f'] },
+		{ rowCol: [2, 3], expectedWhite: [6, 'd'], expectedBlack: [3, 'e'] },
+		{ rowCol: [2, 4], expectedWhite: [6, 'e'], expectedBlack: [3, 'd'] },
+		{ rowCol: [2, 5], expectedWhite: [6, 'f'], expectedBlack: [3, 'c'] },
+		{ rowCol: [2, 6], expectedWhite: [6, 'g'], expectedBlack: [3, 'b'] },
+		{ rowCol: [2, 7], expectedWhite: [6, 'h'], expectedBlack: [3, 'a'] },
+		{ rowCol: [3, 0], expectedWhite: [5, 'a'], expectedBlack: [4, 'h'] },
+		{ rowCol: [3, 1], expectedWhite: [5, 'b'], expectedBlack: [4, 'g'] },
+		{ rowCol: [3, 2], expectedWhite: [5, 'c'], expectedBlack: [4, 'f'] },
+		{ rowCol: [3, 3], expectedWhite: [5, 'd'], expectedBlack: [4, 'e'] },
+		{ rowCol: [3, 4], expectedWhite: [5, 'e'], expectedBlack: [4, 'd'] },
+		{ rowCol: [3, 5], expectedWhite: [5, 'f'], expectedBlack: [4, 'c'] },
+		{ rowCol: [3, 6], expectedWhite: [5, 'g'], expectedBlack: [4, 'b'] },
+		{ rowCol: [3, 7], expectedWhite: [5, 'h'], expectedBlack: [4, 'a'] },
+		{ rowCol: [4, 0], expectedWhite: [4, 'a'], expectedBlack: [5, 'h'] },
+		{ rowCol: [4, 1], expectedWhite: [4, 'b'], expectedBlack: [5, 'g'] },
+		{ rowCol: [4, 2], expectedWhite: [4, 'c'], expectedBlack: [5, 'f'] },
+		{ rowCol: [4, 3], expectedWhite: [4, 'd'], expectedBlack: [5, 'e'] },
+		{ rowCol: [4, 4], expectedWhite: [4, 'e'], expectedBlack: [5, 'd'] },
+		{ rowCol: [4, 5], expectedWhite: [4, 'f'], expectedBlack: [5, 'c'] },
+		{ rowCol: [4, 6], expectedWhite: [4, 'g'], expectedBlack: [5, 'b'] },
+		{ rowCol: [4, 7], expectedWhite: [4, 'h'], expectedBlack: [5, 'a'] },
+		{ rowCol: [5, 0], expectedWhite: [3, 'a'], expectedBlack: [6, 'h'] },
+		{ rowCol: [5, 1], expectedWhite: [3, 'b'], expectedBlack: [6, 'g'] },
+		{ rowCol: [5, 2], expectedWhite: [3, 'c'], expectedBlack: [6, 'f'] },
+		{ rowCol: [5, 3], expectedWhite: [3, 'd'], expectedBlack: [6, 'e'] },
+		{ rowCol: [5, 4], expectedWhite: [3, 'e'], expectedBlack: [6, 'd'] },
+		{ rowCol: [5, 5], expectedWhite: [3, 'f'], expectedBlack: [6, 'c'] },
+		{ rowCol: [5, 6], expectedWhite: [3, 'g'], expectedBlack: [6, 'b'] },
+		{ rowCol: [5, 7], expectedWhite: [3, 'h'], expectedBlack: [6, 'a'] },
+		{ rowCol: [6, 0], expectedWhite: [2, 'a'], expectedBlack: [7, 'h'] },
+		{ rowCol: [6, 1], expectedWhite: [2, 'b'], expectedBlack: [7, 'g'] },
+		{ rowCol: [6, 2], expectedWhite: [2, 'c'], expectedBlack: [7, 'f'] },
+		{ rowCol: [6, 3], expectedWhite: [2, 'd'], expectedBlack: [7, 'e'] },
+		{ rowCol: [6, 4], expectedWhite: [2, 'e'], expectedBlack: [7, 'd'] },
+		{ rowCol: [6, 5], expectedWhite: [2, 'f'], expectedBlack: [7, 'c'] },
+		{ rowCol: [6, 6], expectedWhite: [2, 'g'], expectedBlack: [7, 'b'] },
+		{ rowCol: [6, 7], expectedWhite: [2, 'h'], expectedBlack: [7, 'a'] },
+		{ rowCol: [7, 0], expectedWhite: [1, 'a'], expectedBlack: [8, 'h'] },
+		{ rowCol: [7, 1], expectedWhite: [1, 'b'], expectedBlack: [8, 'g'] },
+		{ rowCol: [7, 2], expectedWhite: [1, 'c'], expectedBlack: [8, 'f'] },
+		{ rowCol: [7, 3], expectedWhite: [1, 'd'], expectedBlack: [8, 'e'] },
+		{ rowCol: [7, 4], expectedWhite: [1, 'e'], expectedBlack: [8, 'd'] },
+		{ rowCol: [7, 5], expectedWhite: [1, 'f'], expectedBlack: [8, 'c'] },
+		{ rowCol: [7, 6], expectedWhite: [1, 'g'], expectedBlack: [8, 'b'] },
+		{ rowCol: [7, 7], expectedWhite: [1, 'h'], expectedBlack: [8, 'a'] },
 	];
 
 	for (const tc of testCases) {
-		await t.test(`rankFileFromRowCol for: ${tc.rowCol}`, () => {
+		test(`rankFileFromRowCol for: ${tc.rowCol}`, () => {
 			const whiteResult = rankFileFromRowCol(tc.rowCol[0], tc.rowCol[1], 'w');
 			const blackResult = rankFileFromRowCol(tc.rowCol[0], tc.rowCol[1], 'b');
 			assert.deepStrictEqual(whiteResult, tc.expectedWhite);
@@ -122,7 +122,7 @@ test('rankFileFromRowCol', async t => {
 	}
 });
 
-test('coordFromRowCol', async t => {
+describe('coordFromRowCol', () => {
 	const testCases: { rowCol: RowCol; expectedWhite: Coord; expectedBlack: Coord }[] = [
 		{ rowCol: [0, 0], expectedWhite: 'a8', expectedBlack: 'h1' },
 		{ rowCol: [0, 1], expectedWhite: 'b8', expectedBlack: 'g1' },
@@ -191,7 +191,7 @@ test('coordFromRowCol', async t => {
 	];
 
 	for (const tc of testCases) {
-		await t.test(`coordFromRowCol for: ${tc.rowCol}`, () => {
+		test(`coordFromRowCol for: ${tc.rowCol}`, () => {
 			const whiteResult = coordFromRowCol(tc.rowCol[0], tc.rowCol[1], 'w');
 			const blackResult = coordFromRowCol(tc.rowCol[0], tc.rowCol[1], 'b');
 			assert.strictEqual(whiteResult, tc.expectedWhite);
@@ -200,76 +200,76 @@ test('coordFromRowCol', async t => {
 	}
 });
 
-test('rowColFromRankFile', async t => {
+describe('rowColFromRankFile', () => {
 	const testCases: { rankFile: RankFile; expectedWhite: RowCol; expectedBlack: RowCol }[] = [
-		{ rankFile: ['8', 'a'], expectedWhite: [0, 0], expectedBlack: [7, 7] },
-		{ rankFile: ['8', 'b'], expectedWhite: [0, 1], expectedBlack: [7, 6] },
-		{ rankFile: ['8', 'c'], expectedWhite: [0, 2], expectedBlack: [7, 5] },
-		{ rankFile: ['8', 'd'], expectedWhite: [0, 3], expectedBlack: [7, 4] },
-		{ rankFile: ['8', 'e'], expectedWhite: [0, 4], expectedBlack: [7, 3] },
-		{ rankFile: ['8', 'f'], expectedWhite: [0, 5], expectedBlack: [7, 2] },
-		{ rankFile: ['8', 'g'], expectedWhite: [0, 6], expectedBlack: [7, 1] },
-		{ rankFile: ['8', 'h'], expectedWhite: [0, 7], expectedBlack: [7, 0] },
-		{ rankFile: ['7', 'a'], expectedWhite: [1, 0], expectedBlack: [6, 7] },
-		{ rankFile: ['7', 'b'], expectedWhite: [1, 1], expectedBlack: [6, 6] },
-		{ rankFile: ['7', 'c'], expectedWhite: [1, 2], expectedBlack: [6, 5] },
-		{ rankFile: ['7', 'd'], expectedWhite: [1, 3], expectedBlack: [6, 4] },
-		{ rankFile: ['7', 'e'], expectedWhite: [1, 4], expectedBlack: [6, 3] },
-		{ rankFile: ['7', 'f'], expectedWhite: [1, 5], expectedBlack: [6, 2] },
-		{ rankFile: ['7', 'g'], expectedWhite: [1, 6], expectedBlack: [6, 1] },
-		{ rankFile: ['7', 'h'], expectedWhite: [1, 7], expectedBlack: [6, 0] },
-		{ rankFile: ['6', 'a'], expectedWhite: [2, 0], expectedBlack: [5, 7] },
-		{ rankFile: ['6', 'b'], expectedWhite: [2, 1], expectedBlack: [5, 6] },
-		{ rankFile: ['6', 'c'], expectedWhite: [2, 2], expectedBlack: [5, 5] },
-		{ rankFile: ['6', 'd'], expectedWhite: [2, 3], expectedBlack: [5, 4] },
-		{ rankFile: ['6', 'e'], expectedWhite: [2, 4], expectedBlack: [5, 3] },
-		{ rankFile: ['6', 'f'], expectedWhite: [2, 5], expectedBlack: [5, 2] },
-		{ rankFile: ['6', 'g'], expectedWhite: [2, 6], expectedBlack: [5, 1] },
-		{ rankFile: ['6', 'h'], expectedWhite: [2, 7], expectedBlack: [5, 0] },
-		{ rankFile: ['5', 'a'], expectedWhite: [3, 0], expectedBlack: [4, 7] },
-		{ rankFile: ['5', 'b'], expectedWhite: [3, 1], expectedBlack: [4, 6] },
-		{ rankFile: ['5', 'c'], expectedWhite: [3, 2], expectedBlack: [4, 5] },
-		{ rankFile: ['5', 'd'], expectedWhite: [3, 3], expectedBlack: [4, 4] },
-		{ rankFile: ['5', 'e'], expectedWhite: [3, 4], expectedBlack: [4, 3] },
-		{ rankFile: ['5', 'f'], expectedWhite: [3, 5], expectedBlack: [4, 2] },
-		{ rankFile: ['5', 'g'], expectedWhite: [3, 6], expectedBlack: [4, 1] },
-		{ rankFile: ['5', 'h'], expectedWhite: [3, 7], expectedBlack: [4, 0] },
-		{ rankFile: ['4', 'a'], expectedWhite: [4, 0], expectedBlack: [3, 7] },
-		{ rankFile: ['4', 'b'], expectedWhite: [4, 1], expectedBlack: [3, 6] },
-		{ rankFile: ['4', 'c'], expectedWhite: [4, 2], expectedBlack: [3, 5] },
-		{ rankFile: ['4', 'd'], expectedWhite: [4, 3], expectedBlack: [3, 4] },
-		{ rankFile: ['4', 'e'], expectedWhite: [4, 4], expectedBlack: [3, 3] },
-		{ rankFile: ['4', 'f'], expectedWhite: [4, 5], expectedBlack: [3, 2] },
-		{ rankFile: ['4', 'g'], expectedWhite: [4, 6], expectedBlack: [3, 1] },
-		{ rankFile: ['4', 'h'], expectedWhite: [4, 7], expectedBlack: [3, 0] },
-		{ rankFile: ['3', 'a'], expectedWhite: [5, 0], expectedBlack: [2, 7] },
-		{ rankFile: ['3', 'b'], expectedWhite: [5, 1], expectedBlack: [2, 6] },
-		{ rankFile: ['3', 'c'], expectedWhite: [5, 2], expectedBlack: [2, 5] },
-		{ rankFile: ['3', 'd'], expectedWhite: [5, 3], expectedBlack: [2, 4] },
-		{ rankFile: ['3', 'e'], expectedWhite: [5, 4], expectedBlack: [2, 3] },
-		{ rankFile: ['3', 'f'], expectedWhite: [5, 5], expectedBlack: [2, 2] },
-		{ rankFile: ['3', 'g'], expectedWhite: [5, 6], expectedBlack: [2, 1] },
-		{ rankFile: ['3', 'h'], expectedWhite: [5, 7], expectedBlack: [2, 0] },
-		{ rankFile: ['2', 'a'], expectedWhite: [6, 0], expectedBlack: [1, 7] },
-		{ rankFile: ['2', 'b'], expectedWhite: [6, 1], expectedBlack: [1, 6] },
-		{ rankFile: ['2', 'c'], expectedWhite: [6, 2], expectedBlack: [1, 5] },
-		{ rankFile: ['2', 'd'], expectedWhite: [6, 3], expectedBlack: [1, 4] },
-		{ rankFile: ['2', 'e'], expectedWhite: [6, 4], expectedBlack: [1, 3] },
-		{ rankFile: ['2', 'f'], expectedWhite: [6, 5], expectedBlack: [1, 2] },
-		{ rankFile: ['2', 'g'], expectedWhite: [6, 6], expectedBlack: [1, 1] },
-		{ rankFile: ['2', 'h'], expectedWhite: [6, 7], expectedBlack: [1, 0] },
-		{ rankFile: ['1', 'a'], expectedWhite: [7, 0], expectedBlack: [0, 7] },
-		{ rankFile: ['1', 'b'], expectedWhite: [7, 1], expectedBlack: [0, 6] },
-		{ rankFile: ['1', 'c'], expectedWhite: [7, 2], expectedBlack: [0, 5] },
-		{ rankFile: ['1', 'd'], expectedWhite: [7, 3], expectedBlack: [0, 4] },
-		{ rankFile: ['1', 'e'], expectedWhite: [7, 4], expectedBlack: [0, 3] },
-		{ rankFile: ['1', 'f'], expectedWhite: [7, 5], expectedBlack: [0, 2] },
-		{ rankFile: ['1', 'g'], expectedWhite: [7, 6], expectedBlack: [0, 1] },
-		{ rankFile: ['1', 'h'], expectedWhite: [7, 7], expectedBlack: [0, 0] },
+		{ rankFile: [8, 'a'], expectedWhite: [0, 0], expectedBlack: [7, 7] },
+		{ rankFile: [8, 'b'], expectedWhite: [0, 1], expectedBlack: [7, 6] },
+		{ rankFile: [8, 'c'], expectedWhite: [0, 2], expectedBlack: [7, 5] },
+		{ rankFile: [8, 'd'], expectedWhite: [0, 3], expectedBlack: [7, 4] },
+		{ rankFile: [8, 'e'], expectedWhite: [0, 4], expectedBlack: [7, 3] },
+		{ rankFile: [8, 'f'], expectedWhite: [0, 5], expectedBlack: [7, 2] },
+		{ rankFile: [8, 'g'], expectedWhite: [0, 6], expectedBlack: [7, 1] },
+		{ rankFile: [8, 'h'], expectedWhite: [0, 7], expectedBlack: [7, 0] },
+		{ rankFile: [7, 'a'], expectedWhite: [1, 0], expectedBlack: [6, 7] },
+		{ rankFile: [7, 'b'], expectedWhite: [1, 1], expectedBlack: [6, 6] },
+		{ rankFile: [7, 'c'], expectedWhite: [1, 2], expectedBlack: [6, 5] },
+		{ rankFile: [7, 'd'], expectedWhite: [1, 3], expectedBlack: [6, 4] },
+		{ rankFile: [7, 'e'], expectedWhite: [1, 4], expectedBlack: [6, 3] },
+		{ rankFile: [7, 'f'], expectedWhite: [1, 5], expectedBlack: [6, 2] },
+		{ rankFile: [7, 'g'], expectedWhite: [1, 6], expectedBlack: [6, 1] },
+		{ rankFile: [7, 'h'], expectedWhite: [1, 7], expectedBlack: [6, 0] },
+		{ rankFile: [6, 'a'], expectedWhite: [2, 0], expectedBlack: [5, 7] },
+		{ rankFile: [6, 'b'], expectedWhite: [2, 1], expectedBlack: [5, 6] },
+		{ rankFile: [6, 'c'], expectedWhite: [2, 2], expectedBlack: [5, 5] },
+		{ rankFile: [6, 'd'], expectedWhite: [2, 3], expectedBlack: [5, 4] },
+		{ rankFile: [6, 'e'], expectedWhite: [2, 4], expectedBlack: [5, 3] },
+		{ rankFile: [6, 'f'], expectedWhite: [2, 5], expectedBlack: [5, 2] },
+		{ rankFile: [6, 'g'], expectedWhite: [2, 6], expectedBlack: [5, 1] },
+		{ rankFile: [6, 'h'], expectedWhite: [2, 7], expectedBlack: [5, 0] },
+		{ rankFile: [5, 'a'], expectedWhite: [3, 0], expectedBlack: [4, 7] },
+		{ rankFile: [5, 'b'], expectedWhite: [3, 1], expectedBlack: [4, 6] },
+		{ rankFile: [5, 'c'], expectedWhite: [3, 2], expectedBlack: [4, 5] },
+		{ rankFile: [5, 'd'], expectedWhite: [3, 3], expectedBlack: [4, 4] },
+		{ rankFile: [5, 'e'], expectedWhite: [3, 4], expectedBlack: [4, 3] },
+		{ rankFile: [5, 'f'], expectedWhite: [3, 5], expectedBlack: [4, 2] },
+		{ rankFile: [5, 'g'], expectedWhite: [3, 6], expectedBlack: [4, 1] },
+		{ rankFile: [5, 'h'], expectedWhite: [3, 7], expectedBlack: [4, 0] },
+		{ rankFile: [4, 'a'], expectedWhite: [4, 0], expectedBlack: [3, 7] },
+		{ rankFile: [4, 'b'], expectedWhite: [4, 1], expectedBlack: [3, 6] },
+		{ rankFile: [4, 'c'], expectedWhite: [4, 2], expectedBlack: [3, 5] },
+		{ rankFile: [4, 'd'], expectedWhite: [4, 3], expectedBlack: [3, 4] },
+		{ rankFile: [4, 'e'], expectedWhite: [4, 4], expectedBlack: [3, 3] },
+		{ rankFile: [4, 'f'], expectedWhite: [4, 5], expectedBlack: [3, 2] },
+		{ rankFile: [4, 'g'], expectedWhite: [4, 6], expectedBlack: [3, 1] },
+		{ rankFile: [4, 'h'], expectedWhite: [4, 7], expectedBlack: [3, 0] },
+		{ rankFile: [3, 'a'], expectedWhite: [5, 0], expectedBlack: [2, 7] },
+		{ rankFile: [3, 'b'], expectedWhite: [5, 1], expectedBlack: [2, 6] },
+		{ rankFile: [3, 'c'], expectedWhite: [5, 2], expectedBlack: [2, 5] },
+		{ rankFile: [3, 'd'], expectedWhite: [5, 3], expectedBlack: [2, 4] },
+		{ rankFile: [3, 'e'], expectedWhite: [5, 4], expectedBlack: [2, 3] },
+		{ rankFile: [3, 'f'], expectedWhite: [5, 5], expectedBlack: [2, 2] },
+		{ rankFile: [3, 'g'], expectedWhite: [5, 6], expectedBlack: [2, 1] },
+		{ rankFile: [3, 'h'], expectedWhite: [5, 7], expectedBlack: [2, 0] },
+		{ rankFile: [2, 'a'], expectedWhite: [6, 0], expectedBlack: [1, 7] },
+		{ rankFile: [2, 'b'], expectedWhite: [6, 1], expectedBlack: [1, 6] },
+		{ rankFile: [2, 'c'], expectedWhite: [6, 2], expectedBlack: [1, 5] },
+		{ rankFile: [2, 'd'], expectedWhite: [6, 3], expectedBlack: [1, 4] },
+		{ rankFile: [2, 'e'], expectedWhite: [6, 4], expectedBlack: [1, 3] },
+		{ rankFile: [2, 'f'], expectedWhite: [6, 5], expectedBlack: [1, 2] },
+		{ rankFile: [2, 'g'], expectedWhite: [6, 6], expectedBlack: [1, 1] },
+		{ rankFile: [2, 'h'], expectedWhite: [6, 7], expectedBlack: [1, 0] },
+		{ rankFile: [1, 'a'], expectedWhite: [7, 0], expectedBlack: [0, 7] },
+		{ rankFile: [1, 'b'], expectedWhite: [7, 1], expectedBlack: [0, 6] },
+		{ rankFile: [1, 'c'], expectedWhite: [7, 2], expectedBlack: [0, 5] },
+		{ rankFile: [1, 'd'], expectedWhite: [7, 3], expectedBlack: [0, 4] },
+		{ rankFile: [1, 'e'], expectedWhite: [7, 4], expectedBlack: [0, 3] },
+		{ rankFile: [1, 'f'], expectedWhite: [7, 5], expectedBlack: [0, 2] },
+		{ rankFile: [1, 'g'], expectedWhite: [7, 6], expectedBlack: [0, 1] },
+		{ rankFile: [1, 'h'], expectedWhite: [7, 7], expectedBlack: [0, 0] },
 	];
 
 	for (const tc of testCases) {
-		await t.test(`rowColFromRankFile for: ${tc.rankFile}`, () => {
+		test(`rowColFromRankFile for: ${tc.rankFile}`, () => {
 			const whiteResult = rowColFromRankFile(tc.rankFile[0], tc.rankFile[1], 'w');
 			const blackResult = rowColFromRankFile(tc.rankFile[0], tc.rankFile[1], 'b');
 			assert.deepStrictEqual(whiteResult, tc.expectedWhite);
@@ -278,159 +278,159 @@ test('rowColFromRankFile', async t => {
 	}
 });
 
-test('coordFromRankFile', async t => {
+describe('coordFromRankFile', () => {
 	const testCases: { rankFile: RankFile; expected: Coord }[] = [
-		{ rankFile: ['8', 'a'], expected: 'a8' },
-		{ rankFile: ['8', 'b'], expected: 'b8' },
-		{ rankFile: ['8', 'c'], expected: 'c8' },
-		{ rankFile: ['8', 'd'], expected: 'd8' },
-		{ rankFile: ['8', 'e'], expected: 'e8' },
-		{ rankFile: ['8', 'f'], expected: 'f8' },
-		{ rankFile: ['8', 'g'], expected: 'g8' },
-		{ rankFile: ['8', 'h'], expected: 'h8' },
-		{ rankFile: ['7', 'a'], expected: 'a7' },
-		{ rankFile: ['7', 'b'], expected: 'b7' },
-		{ rankFile: ['7', 'c'], expected: 'c7' },
-		{ rankFile: ['7', 'd'], expected: 'd7' },
-		{ rankFile: ['7', 'e'], expected: 'e7' },
-		{ rankFile: ['7', 'f'], expected: 'f7' },
-		{ rankFile: ['7', 'g'], expected: 'g7' },
-		{ rankFile: ['7', 'h'], expected: 'h7' },
-		{ rankFile: ['6', 'a'], expected: 'a6' },
-		{ rankFile: ['6', 'b'], expected: 'b6' },
-		{ rankFile: ['6', 'c'], expected: 'c6' },
-		{ rankFile: ['6', 'd'], expected: 'd6' },
-		{ rankFile: ['6', 'e'], expected: 'e6' },
-		{ rankFile: ['6', 'f'], expected: 'f6' },
-		{ rankFile: ['6', 'g'], expected: 'g6' },
-		{ rankFile: ['6', 'h'], expected: 'h6' },
-		{ rankFile: ['5', 'a'], expected: 'a5' },
-		{ rankFile: ['5', 'b'], expected: 'b5' },
-		{ rankFile: ['5', 'c'], expected: 'c5' },
-		{ rankFile: ['5', 'd'], expected: 'd5' },
-		{ rankFile: ['5', 'e'], expected: 'e5' },
-		{ rankFile: ['5', 'f'], expected: 'f5' },
-		{ rankFile: ['5', 'g'], expected: 'g5' },
-		{ rankFile: ['5', 'h'], expected: 'h5' },
-		{ rankFile: ['4', 'a'], expected: 'a4' },
-		{ rankFile: ['4', 'b'], expected: 'b4' },
-		{ rankFile: ['4', 'c'], expected: 'c4' },
-		{ rankFile: ['4', 'd'], expected: 'd4' },
-		{ rankFile: ['4', 'e'], expected: 'e4' },
-		{ rankFile: ['4', 'f'], expected: 'f4' },
-		{ rankFile: ['4', 'g'], expected: 'g4' },
-		{ rankFile: ['4', 'h'], expected: 'h4' },
-		{ rankFile: ['3', 'a'], expected: 'a3' },
-		{ rankFile: ['3', 'b'], expected: 'b3' },
-		{ rankFile: ['3', 'c'], expected: 'c3' },
-		{ rankFile: ['3', 'd'], expected: 'd3' },
-		{ rankFile: ['3', 'e'], expected: 'e3' },
-		{ rankFile: ['3', 'f'], expected: 'f3' },
-		{ rankFile: ['3', 'g'], expected: 'g3' },
-		{ rankFile: ['3', 'h'], expected: 'h3' },
-		{ rankFile: ['2', 'a'], expected: 'a2' },
-		{ rankFile: ['2', 'b'], expected: 'b2' },
-		{ rankFile: ['2', 'c'], expected: 'c2' },
-		{ rankFile: ['2', 'd'], expected: 'd2' },
-		{ rankFile: ['2', 'e'], expected: 'e2' },
-		{ rankFile: ['2', 'f'], expected: 'f2' },
-		{ rankFile: ['2', 'g'], expected: 'g2' },
-		{ rankFile: ['2', 'h'], expected: 'h2' },
-		{ rankFile: ['1', 'a'], expected: 'a1' },
-		{ rankFile: ['1', 'b'], expected: 'b1' },
-		{ rankFile: ['1', 'c'], expected: 'c1' },
-		{ rankFile: ['1', 'd'], expected: 'd1' },
-		{ rankFile: ['1', 'e'], expected: 'e1' },
-		{ rankFile: ['1', 'f'], expected: 'f1' },
-		{ rankFile: ['1', 'g'], expected: 'g1' },
-		{ rankFile: ['1', 'h'], expected: 'h1' },
+		{ rankFile: [8, 'a'], expected: 'a8' },
+		{ rankFile: [8, 'b'], expected: 'b8' },
+		{ rankFile: [8, 'c'], expected: 'c8' },
+		{ rankFile: [8, 'd'], expected: 'd8' },
+		{ rankFile: [8, 'e'], expected: 'e8' },
+		{ rankFile: [8, 'f'], expected: 'f8' },
+		{ rankFile: [8, 'g'], expected: 'g8' },
+		{ rankFile: [8, 'h'], expected: 'h8' },
+		{ rankFile: [7, 'a'], expected: 'a7' },
+		{ rankFile: [7, 'b'], expected: 'b7' },
+		{ rankFile: [7, 'c'], expected: 'c7' },
+		{ rankFile: [7, 'd'], expected: 'd7' },
+		{ rankFile: [7, 'e'], expected: 'e7' },
+		{ rankFile: [7, 'f'], expected: 'f7' },
+		{ rankFile: [7, 'g'], expected: 'g7' },
+		{ rankFile: [7, 'h'], expected: 'h7' },
+		{ rankFile: [6, 'a'], expected: 'a6' },
+		{ rankFile: [6, 'b'], expected: 'b6' },
+		{ rankFile: [6, 'c'], expected: 'c6' },
+		{ rankFile: [6, 'd'], expected: 'd6' },
+		{ rankFile: [6, 'e'], expected: 'e6' },
+		{ rankFile: [6, 'f'], expected: 'f6' },
+		{ rankFile: [6, 'g'], expected: 'g6' },
+		{ rankFile: [6, 'h'], expected: 'h6' },
+		{ rankFile: [5, 'a'], expected: 'a5' },
+		{ rankFile: [5, 'b'], expected: 'b5' },
+		{ rankFile: [5, 'c'], expected: 'c5' },
+		{ rankFile: [5, 'd'], expected: 'd5' },
+		{ rankFile: [5, 'e'], expected: 'e5' },
+		{ rankFile: [5, 'f'], expected: 'f5' },
+		{ rankFile: [5, 'g'], expected: 'g5' },
+		{ rankFile: [5, 'h'], expected: 'h5' },
+		{ rankFile: [4, 'a'], expected: 'a4' },
+		{ rankFile: [4, 'b'], expected: 'b4' },
+		{ rankFile: [4, 'c'], expected: 'c4' },
+		{ rankFile: [4, 'd'], expected: 'd4' },
+		{ rankFile: [4, 'e'], expected: 'e4' },
+		{ rankFile: [4, 'f'], expected: 'f4' },
+		{ rankFile: [4, 'g'], expected: 'g4' },
+		{ rankFile: [4, 'h'], expected: 'h4' },
+		{ rankFile: [3, 'a'], expected: 'a3' },
+		{ rankFile: [3, 'b'], expected: 'b3' },
+		{ rankFile: [3, 'c'], expected: 'c3' },
+		{ rankFile: [3, 'd'], expected: 'd3' },
+		{ rankFile: [3, 'e'], expected: 'e3' },
+		{ rankFile: [3, 'f'], expected: 'f3' },
+		{ rankFile: [3, 'g'], expected: 'g3' },
+		{ rankFile: [3, 'h'], expected: 'h3' },
+		{ rankFile: [2, 'a'], expected: 'a2' },
+		{ rankFile: [2, 'b'], expected: 'b2' },
+		{ rankFile: [2, 'c'], expected: 'c2' },
+		{ rankFile: [2, 'd'], expected: 'd2' },
+		{ rankFile: [2, 'e'], expected: 'e2' },
+		{ rankFile: [2, 'f'], expected: 'f2' },
+		{ rankFile: [2, 'g'], expected: 'g2' },
+		{ rankFile: [2, 'h'], expected: 'h2' },
+		{ rankFile: [1, 'a'], expected: 'a1' },
+		{ rankFile: [1, 'b'], expected: 'b1' },
+		{ rankFile: [1, 'c'], expected: 'c1' },
+		{ rankFile: [1, 'd'], expected: 'd1' },
+		{ rankFile: [1, 'e'], expected: 'e1' },
+		{ rankFile: [1, 'f'], expected: 'f1' },
+		{ rankFile: [1, 'g'], expected: 'g1' },
+		{ rankFile: [1, 'h'], expected: 'h1' },
 	];
 
 	for (const tc of testCases) {
-		await t.test(`coordFromRankFile for: ${tc.rankFile}`, () => {
+		test(`coordFromRankFile for: ${tc.rankFile}`, () => {
 			const expected = coordFromRankFile(tc.rankFile[0], tc.rankFile[1]);
 			assert.strictEqual(expected, tc.expected);
 		});
 	}
 });
 
-test('rankFileFromCoord', async t => {
+describe('rankFileFromCoord', () => {
 	const testCases: { coord: Coord; expected: RankFile }[] = [
-		{ coord: 'a8', expected: ['8', 'a'] },
-		{ coord: 'b8', expected: ['8', 'b'] },
-		{ coord: 'c8', expected: ['8', 'c'] },
-		{ coord: 'd8', expected: ['8', 'd'] },
-		{ coord: 'e8', expected: ['8', 'e'] },
-		{ coord: 'f8', expected: ['8', 'f'] },
-		{ coord: 'g8', expected: ['8', 'g'] },
-		{ coord: 'h8', expected: ['8', 'h'] },
-		{ coord: 'a7', expected: ['7', 'a'] },
-		{ coord: 'b7', expected: ['7', 'b'] },
-		{ coord: 'c7', expected: ['7', 'c'] },
-		{ coord: 'd7', expected: ['7', 'd'] },
-		{ coord: 'e7', expected: ['7', 'e'] },
-		{ coord: 'f7', expected: ['7', 'f'] },
-		{ coord: 'g7', expected: ['7', 'g'] },
-		{ coord: 'h7', expected: ['7', 'h'] },
-		{ coord: 'a6', expected: ['6', 'a'] },
-		{ coord: 'b6', expected: ['6', 'b'] },
-		{ coord: 'c6', expected: ['6', 'c'] },
-		{ coord: 'd6', expected: ['6', 'd'] },
-		{ coord: 'e6', expected: ['6', 'e'] },
-		{ coord: 'f6', expected: ['6', 'f'] },
-		{ coord: 'g6', expected: ['6', 'g'] },
-		{ coord: 'h6', expected: ['6', 'h'] },
-		{ coord: 'a5', expected: ['5', 'a'] },
-		{ coord: 'b5', expected: ['5', 'b'] },
-		{ coord: 'c5', expected: ['5', 'c'] },
-		{ coord: 'd5', expected: ['5', 'd'] },
-		{ coord: 'e5', expected: ['5', 'e'] },
-		{ coord: 'f5', expected: ['5', 'f'] },
-		{ coord: 'g5', expected: ['5', 'g'] },
-		{ coord: 'h5', expected: ['5', 'h'] },
-		{ coord: 'a4', expected: ['4', 'a'] },
-		{ coord: 'b4', expected: ['4', 'b'] },
-		{ coord: 'c4', expected: ['4', 'c'] },
-		{ coord: 'd4', expected: ['4', 'd'] },
-		{ coord: 'e4', expected: ['4', 'e'] },
-		{ coord: 'f4', expected: ['4', 'f'] },
-		{ coord: 'g4', expected: ['4', 'g'] },
-		{ coord: 'h4', expected: ['4', 'h'] },
-		{ coord: 'a3', expected: ['3', 'a'] },
-		{ coord: 'b3', expected: ['3', 'b'] },
-		{ coord: 'c3', expected: ['3', 'c'] },
-		{ coord: 'd3', expected: ['3', 'd'] },
-		{ coord: 'e3', expected: ['3', 'e'] },
-		{ coord: 'f3', expected: ['3', 'f'] },
-		{ coord: 'g3', expected: ['3', 'g'] },
-		{ coord: 'h3', expected: ['3', 'h'] },
-		{ coord: 'a2', expected: ['2', 'a'] },
-		{ coord: 'b2', expected: ['2', 'b'] },
-		{ coord: 'c2', expected: ['2', 'c'] },
-		{ coord: 'd2', expected: ['2', 'd'] },
-		{ coord: 'e2', expected: ['2', 'e'] },
-		{ coord: 'f2', expected: ['2', 'f'] },
-		{ coord: 'g2', expected: ['2', 'g'] },
-		{ coord: 'h2', expected: ['2', 'h'] },
-		{ coord: 'a1', expected: ['1', 'a'] },
-		{ coord: 'b1', expected: ['1', 'b'] },
-		{ coord: 'c1', expected: ['1', 'c'] },
-		{ coord: 'd1', expected: ['1', 'd'] },
-		{ coord: 'e1', expected: ['1', 'e'] },
-		{ coord: 'f1', expected: ['1', 'f'] },
-		{ coord: 'g1', expected: ['1', 'g'] },
-		{ coord: 'h1', expected: ['1', 'h'] },
+		{ coord: 'a8', expected: [8, 'a'] },
+		{ coord: 'b8', expected: [8, 'b'] },
+		{ coord: 'c8', expected: [8, 'c'] },
+		{ coord: 'd8', expected: [8, 'd'] },
+		{ coord: 'e8', expected: [8, 'e'] },
+		{ coord: 'f8', expected: [8, 'f'] },
+		{ coord: 'g8', expected: [8, 'g'] },
+		{ coord: 'h8', expected: [8, 'h'] },
+		{ coord: 'a7', expected: [7, 'a'] },
+		{ coord: 'b7', expected: [7, 'b'] },
+		{ coord: 'c7', expected: [7, 'c'] },
+		{ coord: 'd7', expected: [7, 'd'] },
+		{ coord: 'e7', expected: [7, 'e'] },
+		{ coord: 'f7', expected: [7, 'f'] },
+		{ coord: 'g7', expected: [7, 'g'] },
+		{ coord: 'h7', expected: [7, 'h'] },
+		{ coord: 'a6', expected: [6, 'a'] },
+		{ coord: 'b6', expected: [6, 'b'] },
+		{ coord: 'c6', expected: [6, 'c'] },
+		{ coord: 'd6', expected: [6, 'd'] },
+		{ coord: 'e6', expected: [6, 'e'] },
+		{ coord: 'f6', expected: [6, 'f'] },
+		{ coord: 'g6', expected: [6, 'g'] },
+		{ coord: 'h6', expected: [6, 'h'] },
+		{ coord: 'a5', expected: [5, 'a'] },
+		{ coord: 'b5', expected: [5, 'b'] },
+		{ coord: 'c5', expected: [5, 'c'] },
+		{ coord: 'd5', expected: [5, 'd'] },
+		{ coord: 'e5', expected: [5, 'e'] },
+		{ coord: 'f5', expected: [5, 'f'] },
+		{ coord: 'g5', expected: [5, 'g'] },
+		{ coord: 'h5', expected: [5, 'h'] },
+		{ coord: 'a4', expected: [4, 'a'] },
+		{ coord: 'b4', expected: [4, 'b'] },
+		{ coord: 'c4', expected: [4, 'c'] },
+		{ coord: 'd4', expected: [4, 'd'] },
+		{ coord: 'e4', expected: [4, 'e'] },
+		{ coord: 'f4', expected: [4, 'f'] },
+		{ coord: 'g4', expected: [4, 'g'] },
+		{ coord: 'h4', expected: [4, 'h'] },
+		{ coord: 'a3', expected: [3, 'a'] },
+		{ coord: 'b3', expected: [3, 'b'] },
+		{ coord: 'c3', expected: [3, 'c'] },
+		{ coord: 'd3', expected: [3, 'd'] },
+		{ coord: 'e3', expected: [3, 'e'] },
+		{ coord: 'f3', expected: [3, 'f'] },
+		{ coord: 'g3', expected: [3, 'g'] },
+		{ coord: 'h3', expected: [3, 'h'] },
+		{ coord: 'a2', expected: [2, 'a'] },
+		{ coord: 'b2', expected: [2, 'b'] },
+		{ coord: 'c2', expected: [2, 'c'] },
+		{ coord: 'd2', expected: [2, 'd'] },
+		{ coord: 'e2', expected: [2, 'e'] },
+		{ coord: 'f2', expected: [2, 'f'] },
+		{ coord: 'g2', expected: [2, 'g'] },
+		{ coord: 'h2', expected: [2, 'h'] },
+		{ coord: 'a1', expected: [1, 'a'] },
+		{ coord: 'b1', expected: [1, 'b'] },
+		{ coord: 'c1', expected: [1, 'c'] },
+		{ coord: 'd1', expected: [1, 'd'] },
+		{ coord: 'e1', expected: [1, 'e'] },
+		{ coord: 'f1', expected: [1, 'f'] },
+		{ coord: 'g1', expected: [1, 'g'] },
+		{ coord: 'h1', expected: [1, 'h'] },
 	];
 
 	for (const tc of testCases) {
-		await t.test(`rankFileFromCoord for: ${tc.coord}`, () => {
+		test(`rankFileFromCoord for: ${tc.coord}`, () => {
 			const expected = rankFileFromCoord(tc.coord);
 			assert.deepStrictEqual(expected, tc.expected);
 		});
 	}
 });
 
-test('rowColFromCoord', async t => {
+describe('rowColFromCoord', () => {
 	const testCases: { coord: Coord; expectedWhite: RowCol; expectedBlack: RowCol }[] = [
 		{ coord: 'a8', expectedWhite: [0, 0], expectedBlack: [7, 7] },
 		{ coord: 'b8', expectedWhite: [0, 1], expectedBlack: [7, 6] },
@@ -499,7 +499,7 @@ test('rowColFromCoord', async t => {
 	];
 
 	for (const tc of testCases) {
-		await t.test(`rowColFromCoord for: ${tc.coord}`, () => {
+		test(`rowColFromCoord for: ${tc.coord}`, () => {
 			const expectedWhite = rowColFromCoord(tc.coord, 'w');
 			const expectedBlack = rowColFromCoord(tc.coord, 'b');
 			assert.deepStrictEqual(expectedWhite, tc.expectedWhite);
@@ -508,7 +508,7 @@ test('rowColFromCoord', async t => {
 	}
 });
 
-test('getSquareColor', async t => {
+describe('getSquareColor', () => {
 	const testCases: { coord: Coord; color: Color }[] = [
 		{ coord: 'a8', color: 'w' },
 		{ coord: 'b8', color: 'b' },
@@ -577,14 +577,14 @@ test('getSquareColor', async t => {
 	];
 
 	for (const tc of testCases) {
-		await t.test(`getSquareColor for: ${tc.coord}`, () => {
+		test(`getSquareColor for: ${tc.coord}`, () => {
 			const expected = getSquareColor(tc.coord, 'w');
 			assert.strictEqual(expected, tc.color);
 		});
 	}
 });
 
-test('getDistanceDelta', async t => {
+describe('getDistanceDelta', () => {
 	const testCases: { src: Coord; dest: Coord; orientation: Color; expected: NumPair }[] = [
 		{ src: 'a8', dest: 'a1', orientation: 'w', expected: [7, 0] },
 		{ src: 'a1', dest: 'h8', orientation: 'w', expected: [-7, 7] },
@@ -606,14 +606,14 @@ test('getDistanceDelta', async t => {
 	];
 
 	for (const tc of testCases) {
-		await t.test(`getDistanceDelta for src-dest: ${tc.src} - ${tc.dest}`, () => {
+		test(`getDistanceDelta for src-dest: ${tc.src} - ${tc.dest}`, () => {
 			const expected = getDistanceDelta(tc.src, tc.dest, tc.orientation);
 			assert.deepStrictEqual(expected, tc.expected);
 		});
 	}
 });
 
-test('getDistance', async t => {
+describe('getDistance', () => {
 	const testCases: { src: Coord; dest: Coord; orientation: Color; expected: number }[] = [
 		{ src: 'a8', dest: 'a1', orientation: 'w', expected: 7 },
 		{ src: 'a1', dest: 'h8', orientation: 'w', expected: 7 },
@@ -635,14 +635,14 @@ test('getDistance', async t => {
 	];
 
 	for (const tc of testCases) {
-		await t.test(`getDistance for src-dest: ${tc.src} - ${tc.dest}`, () => {
+		test(`getDistance for src-dest: ${tc.src} - ${tc.dest}`, () => {
 			const expected = getDistance(tc.src, tc.dest, tc.orientation);
 			assert.deepStrictEqual(expected, tc.expected);
 		});
 	}
 });
 
-test('getDeltaXYFromCoord', async t => {
+describe('getDeltaXYFromCoord', () => {
 	const testCases: { coord: Coord; squareSize: number; orientation: Color; expected: NumPair }[] = [
 		{ coord: 'a8', squareSize: 50, orientation: 'w', expected: [0, 0] },
 		{ coord: 'a1', squareSize: 50, orientation: 'w', expected: [0, 350] },
@@ -657,39 +657,64 @@ test('getDeltaXYFromCoord', async t => {
 	];
 
 	for (const tc of testCases) {
-		await t.test(`getDeltaXYFromCoord for: ${tc.coord}`, () => {
+		test(`getDeltaXYFromCoord for: ${tc.coord}`, () => {
 			const expected = getDeltaXYFromCoord(tc.coord, tc.squareSize, tc.squareSize, tc.orientation);
 			assert.deepStrictEqual(expected, tc.expected);
 		});
 	}
 });
 
-test('getSquareCoordFromPointer', async t => {
-	const mockBase = {
-		target: { clientWidth: 50, clientHeight: 50, offsetParent: { offsetLeft: 0, offsetTop: 0 } },
-		clientX: 0,
-		clientY: 0,
-	};
-
-	const testCases: { clientXY: NumPair; orientation: Color; expected: Coord | null }[] = [
-		{ clientXY: [0, 0], orientation: 'w', expected: 'a8' },
-		{ clientXY: [399, 399], orientation: 'w', expected: 'h1' },
-		{ clientXY: [75, 75], orientation: 'w', expected: 'b7' },
-		{ clientXY: [357, 217], orientation: 'w', expected: 'h4' },
-		{ clientXY: [257, 69], orientation: 'w', expected: 'f7' },
-		{ clientXY: [401, 401], orientation: 'w', expected: null },
+describe('getDeltaXYFromCoord', () => {
+	const testCases: { coord: Coord; squareSize: number; orientation: Color; expected: NumPair }[] = [
+		{ coord: 'a8', squareSize: 50, orientation: 'w', expected: [0, 0] },
+		{ coord: 'a1', squareSize: 50, orientation: 'w', expected: [0, 350] },
+		{ coord: 'h8', squareSize: 50, orientation: 'w', expected: [350, 0] },
+		{ coord: 'h1', squareSize: 50, orientation: 'w', expected: [350, 350] },
+		{ coord: 'e4', squareSize: 50, orientation: 'w', expected: [200, 200] },
+		{ coord: 'a8', squareSize: 50, orientation: 'b', expected: [350, 350] },
+		{ coord: 'a1', squareSize: 50, orientation: 'b', expected: [350, 0] },
+		{ coord: 'h8', squareSize: 50, orientation: 'b', expected: [0, 350] },
+		{ coord: 'h1', squareSize: 50, orientation: 'b', expected: [0, 0] },
+		{ coord: 'e4', squareSize: 50, orientation: 'b', expected: [150, 150] },
 	];
 
 	for (const tc of testCases) {
-		await t.test(`getSquareCoordFromPointer for clientXY: ${tc.clientXY}`, () => {
-			const mockEvent = { ...mockBase, clientX: tc.clientXY[0], clientY: tc.clientXY[1] };
-			const expected = getSquareCoordFromPointer(mockEvent as any, tc.orientation);
-			assert.strictEqual(expected, tc.expected);
+		test(`getDeltaXYFromCoord for: ${tc.coord}`, () => {
+			const expected = getDeltaXYFromCoord(tc.coord, tc.squareSize, tc.squareSize, tc.orientation);
+			assert.deepStrictEqual(expected, tc.expected);
 		});
 	}
 });
 
-test('getPositionChanges', async t => {
+describe('getSquareCoordFromPoint', () => {
+	const [boardWidth, boardHeight] = [400, 400];
+
+	const testCases: {
+		point: NumPair;
+		orientation: Color;
+		expected: Coord | null;
+	}[] = [
+		{ point: [0, 0], orientation: 'w', expected: 'a8' },
+		{ point: [399, 399], orientation: 'w', expected: 'h1' },
+		{ point: [75, 75], orientation: 'w', expected: 'b7' },
+		{ point: [357, 217], orientation: 'w', expected: 'h4' },
+		{ point: [257, 69], orientation: 'w', expected: 'f7' },
+		{ point: [401, 401], orientation: 'w', expected: null },
+		{ point: [-1, 0], orientation: 'w', expected: null },
+		{ point: [0, -1], orientation: 'w', expected: null },
+		{ point: [0, 0], orientation: 'b', expected: 'h1' },
+		{ point: [399, 399], orientation: 'b', expected: 'a8' },
+	];
+
+	for (const tc of testCases) {
+		test(`point ${tc.point} orientation ${tc.orientation}`, () => {
+			const result = getSquareCoordFromPoint(tc.point[0], tc.point[1], boardWidth, boardHeight, tc.orientation);
+			assert.strictEqual(result, tc.expected);
+		});
+	}
+});
+
+describe('getPositionChanges', () => {
 	const testCases: { fromFen: string; toFen: string; expected: Change[] }[] = [
 		{ fromFen: FEN_EMPTY, toFen: FEN_EMPTY, expected: [] },
 		{ fromFen: FEN_START, toFen: FEN_START, expected: [] },
@@ -805,7 +830,7 @@ test('getPositionChanges', async t => {
 		changes.map(c => ({ ...c, pieceData: { ...c.pieceData, id: '' } }));
 
 	for (const tc of testCases) {
-		await t.test(`getPositionChanges for: ${tc.fromFen} - ${tc.toFen}`, () => {
+		test(`getPositionChanges for: ${tc.fromFen} - ${tc.toFen}`, () => {
 			const before = fenToPosition(tc.fromFen);
 			const after = fenToPosition(tc.toFen);
 			const expected = getPositionChanges(before, after, 'w');
@@ -814,7 +839,7 @@ test('getPositionChanges', async t => {
 	}
 });
 
-test('fenToPosition', async t => {
+describe('fenToPosition', () => {
 	const testCases: { fen: string; orientation: Color; expected: Position }[] = [
 		{ fen: FEN_EMPTY, orientation: 'w', expected: new Map() },
 		{
@@ -864,7 +889,7 @@ test('fenToPosition', async t => {
 			.map(([coord, pd]) => `${coord}-${pd.piece}`);
 
 	for (const tc of testCases) {
-		await t.test(`fenToPosition for fen: ${tc.fen}`, () => {
+		test(`fenToPosition for fen: ${tc.fen}`, () => {
 			const pos = fenToPosition(tc.fen);
 			const expected = formatOutput(pos);
 			assert.deepStrictEqual(expected, formatOutput(tc.expected));
@@ -872,7 +897,7 @@ test('fenToPosition', async t => {
 	}
 });
 
-test('positionToFen', async t => {
+describe('positionToFen', () => {
 	const testCases: { position: Position; expected: string }[] = [
 		{ position: new Map(), expected: FEN_EMPTY },
 		{
@@ -988,7 +1013,7 @@ test('positionToFen', async t => {
 	];
 
 	for (const tc of testCases) {
-		await t.test(`positionToFen`, () => {
+		test(`positionToFen`, () => {
 			const expected = positionToFen(tc.position);
 			assert.strictEqual(expected, tc.expected.trim().split(' ')[0]);
 		});

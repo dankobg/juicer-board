@@ -1,40 +1,42 @@
 import { ifDefined } from 'lit/directives/if-defined.js';
-import { LitElement, PropertyValues, html, nothing, unsafeCSS } from 'lit';
+import { LitElement, type PropertyValues, html, nothing, unsafeCSS } from 'lit';
 import { customElement, property, query, state } from 'lit/decorators.js';
 import juicerBoardStyles from './juicer-board.css?inline';
 import { map } from 'lit/directives/map.js';
 import {
+	type Color,
+	type Coord,
+	type CoordsFilesPosition,
+	type CoordsPlacement,
+	type CoordsRanksPosition,
+	type PieceData,
+	type PieceFenSymbol,
+	type Position,
+	type Change,
 	BLACK,
-	Color,
 	COLS,
-	Coord,
 	COORDS,
 	COORDS_REVERSED,
-	CoordsFilesPosition,
-	CoordsPlacement,
-	CoordsRanksPosition,
 	FEN_EMPTY,
 	FEN_START,
 	FILES,
+	PIECE_SYMBOLS,
+	ROWS,
+	WHITE,
 	getDeltaXYFromCoord,
 	getPositionChanges,
-	PIECE_SYMBOLS,
-	PieceData,
-	PieceFenSymbol,
-	Position,
-	ROWS,
 	translateElement,
-	WHITE,
 	positionToFen,
 	fenToPosition,
-	Change,
 	assertUnreachable,
 	rowColFromCoord,
 	genId,
 	hideElement,
+	getSquareCoordFromPoint,
+	boolConverter,
 } from './model';
 import { ResizeController } from '@lit-labs/observers/resize-controller.js';
-import { JuicerResizer } from './juicer-resizer.ts';
+import { ResizerScaleChangeEvent } from './juicer-resizer.ts';
 import './juicer-square.ts';
 import './juicer-piece.ts';
 import './juicer-coords.ts';
@@ -77,7 +79,8 @@ export class JuicerBoard extends LitElement {
 		callback: (entries: ResizeObserverEntry[]) => {
 			if (entries.length > 0) {
 				const size = Math.round(entries[0]!.contentRect.width);
-				this.boardSize = size;
+				this.boardWidth = size;
+				this.boardHeight = size;
 				this.style.setProperty('--board-width', `${size}px`);
 				this.style.setProperty('--board-height', `${size}px`);
 			}
@@ -90,16 +93,14 @@ export class JuicerBoard extends LitElement {
 
 	@property() fen: string = FEN_EMPTY;
 	@property() orientation: Color = WHITE;
-	@property({ type: Number, attribute: 'min-size' }) minSize: number = 0;
-	@property({ type: Number, attribute: 'max-size' }) maxSize?: number;
-	@property({ type: Boolean }) interactive: boolean = false;
-	@property({ type: Boolean, attribute: 'show-ghost' }) showGhost: boolean = false;
+	@property({ converter: boolConverter }) interactive: boolean = false;
+	@property({ attribute: 'show-ghost', converter: boolConverter }) showGhost: boolean = false;
 	@property({ attribute: 'board-theme' }) boardTheme?: string;
 	@property({ attribute: 'piece-theme' }) pieceTheme?: (pieceFenSymbol: PieceFenSymbol) => string;
 	@property({ attribute: 'coords-placement' }) coordsPlacement: CoordsPlacement;
 	@property({ attribute: 'ranks-position' }) ranksPosition: CoordsRanksPosition;
 	@property({ attribute: 'files-position' }) filesPosition: CoordsFilesPosition;
-	@property({ attribute: 'show-resizer', type: Boolean }) showResizer: boolean = false;
+	@property({ attribute: 'show-resizer', converter: boolConverter }) showResizer: boolean = false;
 	@property({ attribute: 'check-square' }) checkSquare?: Coord;
 	@property({ type: Object }) resizeTarget: HTMLElement | null = null;
 	@property({ type: Number, attribute: 'anim-snapback-dur' }) animationSnapbackDuration: number = 0;
@@ -126,7 +127,8 @@ export class JuicerBoard extends LitElement {
 	set animationMoveDuration(value: number) {
 		this._animationMoveDuration = value;
 	}
-	@state() boardSize: number = 0;
+	@state() boardWidth: number = 0;
+	@state() boardHeight: number = 0;
 	@state() get coords() {
 		return this.orientation === WHITE ? COORDS : COORDS_REVERSED;
 	}
@@ -147,11 +149,22 @@ export class JuicerBoard extends LitElement {
 	@state() animationsFinished: number = 0;
 	@state() removeClonesPosition: Position = new Map();
 	@query('.board') boardElm!: HTMLElement;
-	@query('juicer-resizer') juicerResizerElm!: JuicerResizer;
+
+	private getBoardValues(clientX: number, clientY: number) {
+		const rect = this.boardElm.getBoundingClientRect();
+		return {
+			x: clientX - rect.left,
+			y: clientY - rect.top,
+			width: rect.width,
+			height: rect.height,
+		};
+	}
 
 	private onPiecePointerDown(event: PiecePointerDownEvent): void {
 		event.stopPropagation();
-		const { coord, pieceElement, pieceRect, clientX, clientY } = event.data;
+		const { pieceElement, pieceRect, clientX, clientY } = event.data;
+		const { x, y, width, height } = this.getBoardValues(clientX, clientY);
+		const coord = getSquareCoordFromPoint(x, y, width, height, this.orientation);
 		if (!coord) {
 			return;
 		}
@@ -175,10 +188,16 @@ export class JuicerBoard extends LitElement {
 		this.pieceOffsetWidth = pieceRect.width / 2;
 		this.pieceOffsetHeight = pieceRect.height / 2;
 		this.srcSquare = coord;
-		const [x, y] = getDeltaXYFromCoord(this.srcSquare, this.boardSize / 8, this.boardSize / 8, this.orientation);
-		this.lastPos = { x, y };
-		const deltaX = clientX - this.offsetLeft - this.pieceOffsetWidth;
-		const deltaY = clientY - this.offsetTop - this.pieceOffsetHeight;
+		const [dx, dy] = getDeltaXYFromCoord(
+			this.srcSquare,
+			this.boardWidth / COLS,
+			this.boardHeight / ROWS,
+			this.orientation
+		);
+		this.lastPos = { x: dx, y: dy };
+		const boardRect = this.boardElm.getBoundingClientRect();
+		const deltaX = clientX - boardRect.left - this.pieceOffsetWidth;
+		const deltaY = clientY - boardRect.top - this.pieceOffsetHeight;
 		translateElement(this.draggedElm, deltaX, deltaY);
 	}
 
@@ -187,17 +206,19 @@ export class JuicerBoard extends LitElement {
 		if (!this.dragging) {
 			return;
 		}
-		const { coord, pieceElement, clientX, clientY } = event.data;
+		const { pieceElement, clientX, clientY } = event.data;
 		this.dragging = false;
 		this.draggedElm = null;
 		this.ghost = null;
+		const { x, y, width, height } = this.getBoardValues(clientX, clientY);
+		const coord = getSquareCoordFromPoint(x, y, width, height, this.orientation);
 		if (coord === null || coord === this.srcSquare) {
 			const src = this.srcSquare!;
 			const dest = coord;
 			const piece = this.getPiece(src)!;
 			this.performSnapback(pieceElement, src, dest, pieceElement, piece, coord === null);
 		} else {
-			this.performSnapToSquare(pieceElement, coord!, clientX, clientY, this);
+			this.performSnapToSquare(pieceElement, coord!, clientX, clientY);
 		}
 	}
 
@@ -206,10 +227,13 @@ export class JuicerBoard extends LitElement {
 		if (!this.dragging) {
 			return;
 		}
-		const { coord, pieceElement, clientX, clientY } = event.data;
+		const { pieceElement, clientX, clientY } = event.data;
+		const { x, y, width, height } = this.getBoardValues(clientX, clientY);
+		const coord = getSquareCoordFromPoint(x, y, width, height, this.orientation);
 		this.dragOverSquare = coord;
-		const deltaX = clientX - this.offsetLeft - this.pieceOffsetWidth;
-		const deltaY = clientY - this.offsetTop - this.pieceOffsetHeight;
+		const boardRect = this.boardElm.getBoundingClientRect();
+		const deltaX = clientX - boardRect.left - this.pieceOffsetWidth;
+		const deltaY = clientY - boardRect.top - this.pieceOffsetHeight;
 		translateElement(pieceElement, deltaX, deltaY);
 	}
 
@@ -222,6 +246,10 @@ export class JuicerBoard extends LitElement {
 
 	private onBoardContextMenu(event: Event): void {
 		event.preventDefault();
+	}
+
+	private onResizerScaleChanged(event: ResizerScaleChangeEvent): void {
+		this.style.setProperty('--board-scale', `${event.data.scale}`);
 	}
 
 	private setBoardTheme(): void {
@@ -250,7 +278,7 @@ export class JuicerBoard extends LitElement {
 		outOufBound?: boolean
 	): void {
 		translateElement(elm, this.lastPos.x, this.lastPos.y);
-		elm.style.removeProperty('transform'); // tmp fix not sure if this is ideal, i need to get rid of the transform so the one with css variable gets used
+		elm.style.removeProperty('transform');
 		this.srcSquare = null;
 		this.lastPos = { x: 0, y: 0 };
 		const moveCancelEvent = new MoveCancelEvent({
@@ -263,13 +291,7 @@ export class JuicerBoard extends LitElement {
 		this.dispatchEvent(moveCancelEvent);
 	}
 
-	private performSnapToSquare(
-		elm: HTMLElement,
-		dest: Coord,
-		clientX: number,
-		clientY: number,
-		boardElement: HTMLElement
-	) {
+	private performSnapToSquare(elm: HTMLElement, dest: Coord, clientX: number, clientY: number) {
 		const src = this.srcSquare!;
 		const pieceData = this.getPiece(src)!;
 		const moveFinishEvent = new MoveFinishEvent({ src, dest, pieceElement: elm, pieceData });
@@ -285,17 +307,18 @@ export class JuicerBoard extends LitElement {
 		afterPosition.set(dest, pieceData);
 		afterPosition.delete(src);
 		this.position = afterPosition;
-		const [x, y] = getDeltaXYFromCoord(dest, this.boardSize / 8, this.boardSize / 8, this.orientation);
-		const squareTopLeftX = x + boardElement.offsetLeft;
-		const squareTopLeftY = y + boardElement.offsetTop;
+		const [x, y] = getDeltaXYFromCoord(dest, this.boardWidth / COLS, this.boardHeight / ROWS, this.orientation);
+		const boardRect = this.boardElm.getBoundingClientRect();
+		const squareTopLeftX = boardRect.left + x;
+		const squareTopLeftY = boardRect.top + y;
 		const snapDx = clientX - squareTopLeftX - this.pieceOffsetWidth;
 		const snapDy = clientY - squareTopLeftY - this.pieceOffsetHeight;
-		const deltaX = clientX - this.offsetLeft - this.pieceOffsetWidth - snapDx;
-		const deltaY = clientY - this.offsetTop - this.pieceOffsetHeight - snapDy;
+		const deltaX = clientX - boardRect.left - this.pieceOffsetWidth - snapDx;
+		const deltaY = clientY - boardRect.top - this.pieceOffsetHeight - snapDy;
 		translateElement(elm, deltaX, deltaY);
 	}
 
-	private printBoard(position: Position, orientation: Color): string {
+	private getBoardAscii(position: Position, orientation: Color): string {
 		const border = '+------------------------+';
 		let s = `   ${border}\n`;
 		for (let i = 0; i < this.coords.length; i++) {
@@ -323,8 +346,12 @@ export class JuicerBoard extends LitElement {
 		this.orientation = this.orientation === WHITE ? BLACK : WHITE;
 	}
 
-	print(): string {
-		return this.printBoard(this.position, this.orientation);
+	ascii(): string {
+		return this.getBoardAscii(this.position, this.orientation);
+	}
+
+	print(): void {
+		console.log(this.getBoardAscii(this.position, this.orientation));
 	}
 
 	getFen(): string {
@@ -369,7 +396,7 @@ export class JuicerBoard extends LitElement {
 		anim.id = `piece-enter-${genId()}`;
 		const cb = () => {
 			translateElement(elm, deltaX, deltaY);
-			elm.style.removeProperty('transform'); // tmp fix not sure if this is ideal, i need to get rid of the transform so the one with css variable gets used
+			elm.style.removeProperty('transform');
 		};
 		return [anim, cb];
 	}
@@ -407,7 +434,7 @@ export class JuicerBoard extends LitElement {
 		anim.id = `piece-move-${genId()}`;
 		const cb = () => {
 			translateElement(elm, destDeltaX, destDeltaY);
-			elm.style.removeProperty('transform'); // tmp fix not sure if this is ideal, i need to get rid of the transform so the one with css variable gets used
+			elm.style.removeProperty('transform');
 		};
 		return [anim, cb];
 	}
@@ -563,12 +590,6 @@ export class JuicerBoard extends LitElement {
 		this.enqueuePieceAnimations(changes, afterPosition);
 	}
 
-	protected override firstUpdated(): void {
-		if (!this.maxSize) {
-			this.maxSize = Math.min(window.innerHeight, window.innerWidth);
-		}
-	}
-
 	protected override willUpdate(changedProperties: PropertyValues<this>): void {
 		if (changedProperties.has('fen')) {
 			const fen = ['new', 'start'].includes(this.fen) ? FEN_START : this.fen;
@@ -579,12 +600,6 @@ export class JuicerBoard extends LitElement {
 		}
 		if (changedProperties.has('pieceTheme')) {
 			this.setPieceTheme();
-		}
-		if (changedProperties.has('minSize')) {
-			this.style.setProperty('--min-size', `${this.minSize}px`);
-		}
-		if (changedProperties.has('maxSize')) {
-			this.style.setProperty('--max-size', `${this.maxSize}px`);
 		}
 		if (changedProperties.has('animationsFinished')) {
 			if (this.animationsFinished === 0) {
@@ -609,13 +624,10 @@ export class JuicerBoard extends LitElement {
 				></juicer-coords>
 
 				${this.showResizer
-					? html`
-							<juicer-resizer
-								.target="${(this.resizeTarget || this) as any}"
-								min-size="${this.minSize}"
-								max-size="${ifDefined(this.maxSize)}"
-							></juicer-resizer>
-						`
+					? html`<juicer-resizer
+							@resizer:scale-changed="${this.onResizerScaleChanged}"
+							.resizable="${(this.resizeTarget || this) as any}"
+						></juicer-resizer>`
 					: nothing}
 
 				<div class="squares">
