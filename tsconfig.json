@@ -21,7 +21,9 @@
 		"noPropertyAccessFromIndexSignature": true,
 		"noUncheckedIndexedAccess": true,
 		"moduleDetection": "force",
-		"erasableSyntaxOnly": true
+		"erasableSyntaxOnly": true,
+		"rootDir": "./src",
+		"outDir": "./dest"
 	},
 	"include": ["src"]
 }
