@@ -30,7 +30,7 @@ export class JuicerCoords extends LitElement {
 	}
 
 	private getFileCoordColor(file: File): Color {
-		const rank = this.filesPosition === 'bottom' ? '1' : '8';
+		const rank = this.filesPosition === 'bottom' ? 1 : 8;
 		return getSquareColor(coordFromRankFile(rank, file), this.orientation);
 	}
 
