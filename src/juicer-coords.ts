@@ -25,12 +25,16 @@ export class JuicerCoords extends LitElement {
 	@property({ attribute: 'files-position' }) filesPosition: CoordsFilesPosition;
 
 	private getRankCoordColor(rank: Rank): Color {
-		const file = this.ranksPosition === 'left' ? 'a' : 'h';
+		const leftFile = this.orientation === 'w' ? 'a' : 'h';
+		const rightFile = this.orientation === 'w' ? 'h' : 'a';
+		const file = this.ranksPosition === 'left' ? leftFile : rightFile;
 		return getSquareColor(coordFromRankFile(rank, file), this.orientation);
 	}
 
 	private getFileCoordColor(file: File): Color {
-		const rank = this.filesPosition === 'bottom' ? 1 : 8;
+		const bottomRank = this.orientation === 'w' ? 1 : 8;
+		const topRank = this.orientation === 'w' ? 8 : 1;
+		const rank = this.filesPosition === 'bottom' ? bottomRank : topRank;
 		return getSquareColor(coordFromRankFile(rank, file), this.orientation);
 	}
 
