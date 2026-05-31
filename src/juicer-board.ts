@@ -36,7 +36,6 @@ import {
 	boolConverter,
 } from './model';
 import { ResizeController } from '@lit-labs/observers/resize-controller.js';
-import { ResizerScaleChangeEvent } from './juicer-resizer.ts';
 import './juicer-square.ts';
 import './juicer-piece.ts';
 import './juicer-coords.ts';
