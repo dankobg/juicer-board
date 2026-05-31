@@ -67,7 +67,8 @@ export type {
 	Position,
 	Change,
 } from './model';
-export { ResizerScaleChangeEvent } from './juicer-resizer.ts';
+import { ResizerScaleChangeEvent } from './juicer-resizer.ts';
+export { ResizerScaleChangeEvent };
 
 @customElement('juicer-board')
 export class JuicerBoard extends LitElement {
