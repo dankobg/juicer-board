@@ -50,7 +50,7 @@ export class JuicerResizer extends LitElement {
 		const { clientX } = event;
 		const diffX = clientX - this.startX;
 		const newScale = this.startScale + diffX * this.scaleFactor;
-		const newScaleClamped = Math.max(10, Math.min(100, newScale));
+		const newScaleClamped = Math.max(1, Math.min(100, newScale));
 		this.scale = newScaleClamped;
 		this.dispatchEvent(new ResizerScaleChangeEvent({ scale: newScaleClamped }));
 	};

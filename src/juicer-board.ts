@@ -248,10 +248,6 @@ export class JuicerBoard extends LitElement {
 		event.preventDefault();
 	}
 
-	private onResizerScaleChanged(event: ResizerScaleChangeEvent): void {
-		this.style.setProperty('--board-scale', `${event.data.scale}`);
-	}
-
 	private setBoardTheme(): void {
 		if (this.boardTheme) {
 			this.style.setProperty('--board-theme', `url('${this.boardTheme}')`);
@@ -624,10 +620,7 @@ export class JuicerBoard extends LitElement {
 				></juicer-coords>
 
 				${this.showResizer
-					? html`<juicer-resizer
-							@resizer:scale-changed="${this.onResizerScaleChanged}"
-							.resizable="${(this.resizeTarget || this) as any}"
-						></juicer-resizer>`
+					? html`<juicer-resizer .resizable="${(this.resizeTarget || this) as any}"></juicer-resizer>`
 					: nothing}
 
 				<div class="squares">

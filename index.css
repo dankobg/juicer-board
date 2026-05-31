@@ -18,11 +18,12 @@
 	--bk-theme: url('https://raw.githubusercontent.com/lichess-org/lila/89614657e9cfd285968aa502f6479c0620a5ac1b/public/piece/gioco/bK.svg');
 	--bq-theme: url('https://raw.githubusercontent.com/lichess-org/lila/89614657e9cfd285968aa502f6479c0620a5ac1b/public/piece/gioco/bQ.svg');
 	--bp-theme: url('https://raw.githubusercontent.com/lichess-org/lila/89614657e9cfd285968aa502f6479c0620a5ac1b/public/piece/gioco/bP.svg');
+
+	--board-scale: 100;
+	--nav-height: 50px;
 }
 
 body {
-	--board-scale: 100;
-	--nav-height: 50px;
 	margin: 0;
 }
 

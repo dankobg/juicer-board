@@ -9,6 +9,10 @@
 		<script type="module" src="/src/juicer-board.ts"></script>
 		<script type="module">
 			const jb = document.querySelector('juicer-board');
+			jb.addEventListener('resizer:scale-changed', e => {
+				e.stopPropagation();
+				document.documentElement.style.setProperty('--board-scale', e.data.scale);
+			});
 		</script>
 	</head>
 
