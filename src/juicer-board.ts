@@ -750,5 +750,6 @@ declare global {
 		movestart: MoveStartEvent;
 		movefinish: MoveFinishEvent;
 		movecancel: MoveCancelEvent;
+		'resizer:scale-changed': ResizerScaleChangeEvent;
 	}
 }
